@@ -1,0 +1,1 @@
+from Flask_CVProject.app import create_app

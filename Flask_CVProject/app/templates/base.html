@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CVision - Hệ thống quản lý CV{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #06b6d4;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+        }
+
+        h1 { font-weight: 800; line-height: 1.15; }
+        h2 { font-weight: 800; line-height: 1.2; }
+        h3 { font-weight: 700; line-height: 1.25; }
+
+        p { line-height: 1.7; }
+
+        .btn, button {
+            font-weight: 600;
+            letter-spacing: 0;
+            border-radius: 12px;
+        }
+        
+        /* Header Styles */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar.scrolled {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            padding: 0.75rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .navbar-brand i {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-link {
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            margin: 0 0.5rem;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: var(--gradient-1);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover::after {
+            width: 80%;
+        }
+        
+        .btn-login {
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+        
+      
+        
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        /* Footer Styles */
+        footer {
+            background: rgba(30, 41, 59, 0.95);
+            color: white;
+            padding: 3rem 0 1rem;
+            margin-top: auto;
+        }
+        
+        .footer-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .footer-links a i {
+            margin-right: 0.5rem;
+        }
+        
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .social-links a:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* User Menu Dropdown */
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            background: rgba(102, 126, 234, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-info:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .dropdown-menu {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary-color);
+            padding-left: 2rem;
+        }
+        
+        /* Alert Styles */
+        .alert {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading Spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .spinner-modern {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(79, 70, 229, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Card Hover Effects */
+        .card, .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover, .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Button Enhancements */
+        .btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Responsive Improvements */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 0;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem !important;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem !important;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/faviconCVision.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='img/faviconCVision.png') }}">
+</head>
+<body>
+    <!-- Header / Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='img/logoCVision-1.png') }}" alt="CVision" style="height:50px; width:auto; display:block;"/>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
+                    </li>
+                    <!-- Menu cho Candidate -->
+                    <li class="nav-item candidate-menu" style="display: none;">
+                        <a class="nav-link" href="/create-cv">
+                            <i class="bi bi-file-earmark-plus me-1"></i> Tạo CV
+                        </a>
+                    </li>
+                    <li class="nav-item candidate-menu" style="display: none;">
+                        <a class="nav-link" href="/jobs">
+                            <i class="bi bi-briefcase me-1"></i> Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item candidate-menu" style="display: none;">
+                        <a class="nav-link" href="/my-applications">
+                            <i class="bi bi-clipboard-check me-1"></i> Trạng thái ứng tuyển
+                        </a>
+                    </li>
+                    <!-- Menu cho Recruiter -->
+                    <li class="nav-item recruiter-menu" style="display: none;">
+                        <a class="nav-link" href="/recruiter/jobs">
+                            <i class="bi bi-briefcase me-1"></i> Bài đăng tuyển dụng
+                        </a>
+                    </li>
+                    <li class="nav-item recruiter-menu" style="display: none;">
+                        <a class="nav-link" href="/recruiter/dashboard">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item recruiter-menu" style="display: none;">
+                        <a class="nav-link" href="/recruiter/applications">
+                            <i class="bi bi-file-earmark-person me-1"></i> CV ứng tuyển
+                        </a>
+                    </li>
+                    <!-- Menu cho Admin -->
+                    <li class="nav-item admin-menu" style="display: none;">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item admin-menu" style="display: none;">
+                        <a class="nav-link" href="/admin/jobs">
+                            <i class="bi bi-briefcase me-1"></i> Quản lý bài đăng
+                        </a>
+                    </li>
+                    <li class="nav-item admin-menu" style="display: none;">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="bi bi-people me-1"></i> Quản lý tài khoản
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">
+                            <i class="bi bi-info-circle me-1"></i> About us
+                        </a>
+                    </li>
+                    
+                    <!-- User not logged in -->
+                    <li class="nav-item ms-3" id="loginButton">
+                        <a class="btn btn-login" href="/login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                        </a>
+                    </li>
+                 
+                    <!-- User logged in (hidden by default, show with JavaScript) -->
+                    <li class="nav-item dropdown ms-3 d-none" id="userMenu">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    <span id="userInitial">U</span>
+                                </div>
+                                <span class="user-name" id="userName">User</span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <div class="dropdown-item-text">
+                                    <small class="text-muted">Đăng nhập với</small><br>
+                                    <strong id="userEmail">user@example.com</strong>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i> My Profile</a></li>
+                            <!-- Menu cho Candidate -->
+                            <li class="candidate-menu" style="display: none;"><a class="dropdown-item" href="/create-cv"><i class="bi bi-file-earmark-plus me-2"></i> Tạo CV</a></li>
+                            <li class="candidate-menu" style="display: none;"><a class="dropdown-item" href="/jobs"><i class="bi bi-briefcase me-2"></i> Jobs</a></li>
+                            <li class="candidate-menu" style="display: none;"><a class="dropdown-item" href="/my-applications"><i class="bi bi-clipboard-check me-2"></i> Trạng thái ứng tuyển</a></li>
+                            <!-- Menu cho Admin -->
+                            <li class="admin-menu" style="display: none;"><a class="dropdown-item" href="/admin/dashboard"><i class="bi bi-speedometer2 me-2"></i> Admin Dashboard</a></li>
+                            <li class="admin-menu" style="display: none;"><a class="dropdown-item" href="/admin/users"><i class="bi bi-people me-2"></i> Quản lý tài khoản</a></li>
+                            <li class="admin-menu" style="display: none;"><a class="dropdown-item" href="/admin/jobs"><i class="bi bi-briefcase me-2"></i> Quản lý bài đăng</a></li>
+                            <!-- Menu cho Recruiter -->
+                            <li class="recruiter-menu" style="display: none;"><a class="dropdown-item" href="/recruiter/dashboard"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                            <li class="recruiter-menu" style="display: none;"><a class="dropdown-item" href="/recruiter/jobs"><i class="bi bi-briefcase me-2"></i> Quản lý bài đăng</a></li>
+                            <li class="recruiter-menu" style="display: none;"><a class="dropdown-item" href="/recruiter/applications"><i class="bi bi-file-earmark-person me-2"></i> CV ứng tuyển</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(); return false;">
+                                <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="footer-title">
+                        <i class="bi bi-file-earmark-text"></i> CVision
+                    </h5>
+                    <p class="text-white-50">
+                        Smart CV management and classification system using Machine Learning technology, helping businesses find suitable candidates quickly and effectively.
+                    </p>
+                    <div class="social-links mt-3">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <h5 class="footer-title">Quick links</h5>
+                    <ul class="footer-links">
+                        <li><a href="/"><i class="bi bi-chevron-right"></i> Home</a></li>
+                        <li><a href="/upload"><i class="bi bi-chevron-right"></i> Upload CV</a></li>
+                        <li><a href="#"><i class="bi bi-chevron-right"></i> Statistics</a></li>
+                        <li><a href="#"><i class="bi bi-chevron-right"></i> Guide</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <h5 class="footer-title">Contact</h5>
+                    <ul class="footer-links">
+                        <li>
+                            <a href="mailto:contact@cvision.com">
+                                <i class="bi bi-envelope"></i> contact@cvision.com
+                            </a>
+                        </li>
+                        <li>
+                            <a href="tel:+84123456789">
+                                <i class="bi bi-telephone"></i> +84 909 090 909
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="bi bi-geo-alt"></i> Ho Chi Minh City, Vietnam
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="bi bi-clock"></i> Mon-Fri: 8:00 - 17:00
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="mb-0">
+                    &copy; 2025 CVision. All rights reserved. Made with 
+                    <i class="bi bi-heart-fill text-danger"></i> by CVision Team
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main JS (Toast, Auth, etc.) -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Global UI Enhancements -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && href.length > 1) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Add fade-in animation to elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all cards and sections
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.card, .stat-card, section');
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+    
+    <!-- Auth Helper Script -->
+    <script>
+        // Check if user is logged in and update UI
+        function updateAuthUI() {
+            const token = localStorage.getItem('access_token');
+            const userEmail = localStorage.getItem('user_email');
+            const userFullName = localStorage.getItem('user_full_name');
+            const userRole = localStorage.getItem('user_role');
+
+            const loginBtn = document.getElementById('loginButton');
+            const registerBtn = document.getElementById('registerButton');
+            const userMenu = document.getElementById('userMenu');
+            const userNameEl = document.getElementById('userName');
+            const userEmailEl = document.getElementById('userEmail');
+            const userInitialEl = document.getElementById('userInitial');
+            
+            // Get all menu items by role
+            const candidateMenus = document.querySelectorAll('.candidate-menu');
+            const recruiterMenus = document.querySelectorAll('.recruiter-menu');
+            
+            if (token && userEmail) {
+                if (loginBtn) loginBtn.classList.add('d-none');
+                if (registerBtn) registerBtn.classList.add('d-none');
+                if (userMenu) userMenu.classList.remove('d-none');
+
+                const displayName = (userFullName && userFullName.trim()) || userEmail.split('@')[0];
+                if (userNameEl) userNameEl.textContent = displayName;
+                if (userEmailEl) userEmailEl.textContent = userEmail;
+                if (userInitialEl) userInitialEl.textContent = displayName.charAt(0).toUpperCase();
+                
+                // Show/hide menus based on role
+                const adminMenus = document.querySelectorAll('.admin-menu');
+                
+                if (userRole === 'admin') {
+                    candidateMenus.forEach(menu => menu.style.display = 'none');
+                    recruiterMenus.forEach(menu => menu.style.display = 'none');
+                    adminMenus.forEach(menu => menu.style.display = 'block');
+                } else if (userRole === 'recruiter') {
+                    candidateMenus.forEach(menu => menu.style.display = 'none');
+                    recruiterMenus.forEach(menu => menu.style.display = 'block');
+                    adminMenus.forEach(menu => menu.style.display = 'none');
+                } else if (userRole === 'candidate') {
+                    candidateMenus.forEach(menu => menu.style.display = 'block');
+                    recruiterMenus.forEach(menu => menu.style.display = 'none');
+                    adminMenus.forEach(menu => menu.style.display = 'none');
+                } else {
+                    // Default: show candidate menu
+                    candidateMenus.forEach(menu => menu.style.display = 'block');
+                    recruiterMenus.forEach(menu => menu.style.display = 'none');
+                    adminMenus.forEach(menu => menu.style.display = 'none');
+                }
+            } else {
+                if (loginBtn) loginBtn.classList.remove('d-none');
+                if (registerBtn) registerBtn.classList.remove('d-none');
+                if (userMenu) userMenu.classList.add('d-none');
+                
+                // Hide all role-specific menus
+                candidateMenus.forEach(menu => menu.style.display = 'none');
+                recruiterMenus.forEach(menu => menu.style.display = 'none');
+                document.querySelectorAll('.admin-menu').forEach(menu => menu.style.display = 'none');
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            // Clear all CV drafts before clearing user data
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('cv_builder_draft_')) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            localStorage.removeItem('cv_builder_draft'); // Xóa dữ liệu cũ nếu có
+            
+            // Clear all auth data
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_role');
+            localStorage.removeItem('user_full_name');
+            
+            // Hide role-specific menus
+            document.querySelectorAll('.candidate-menu, .recruiter-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+            
+            // Show success message
+            if (typeof Toast !== 'undefined') {
+                Toast.success('Đã đăng xuất thành công!');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            } else {
+                // Fallback if Toast not loaded
+                alert('Đã đăng xuất thành công!');
+                window.location.href = '/';
+            }
+        }
+        
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAuthUI();
+        });
+        
+        // Also run immediately (in case DOMContentLoaded already fired)
+        updateAuthUI();
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

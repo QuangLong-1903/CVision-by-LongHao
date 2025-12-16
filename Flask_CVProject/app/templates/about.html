@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero { padding: 5rem 0 2rem; text-align: center; }
+    .about-title { font-weight: 800; font-size: 2.5rem; }
+    .about-sub { color:#64748b; max-width: 800px; margin: 0 auto; }
+    .about-section { padding: 3rem 0; }
+    .card-lite { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:1.5rem; height:100%; }
+    .icon-pill { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:#f0f4ff; color:#4f46e5; font-size:1.3rem; }
+    .values li { margin-bottom: .5rem; }
+    .team-avatar { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .cta-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:2rem; text-align:center; }
+    .btn-primary-cta { background:#4f46e5; color:#fff; border:none; border-radius:12px; padding:.9rem 1.3rem; font-weight:600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+    <div class="container">
+        <h1 class="about-title text-center">About CVision</h1>
+        <p class="about-sub text-center">Chúng tôi xây dựng các công cụ giúp các nhóm tổ chức và hiểu sơ yếu lý lịch nhanh hơn bằng cách sử dụng học máy và trải nghiệm người dùng hiện đại.</p>
+    </div>
+    </section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card-lite">
+                    <div class="icon-pill mb-3"><i class="bi bi-robot"></i></div>
+                    <h5>Mục tiêu của chúng tôi</h5>
+                    <p class="text-muted">Làm cho việc tuyển dụng đơn giản hơn bằng cách tự động hóa các tác vụ sàng lọc lặp lại trong khi vẫn giữ con người trong quyền kiểm soát.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-lite">
+                    <div class="icon-pill mb-3"><i class="bi bi-shield-check"></i></div>
+                    <h5>Quyền riêng tư & Bảo mật</h5>
+                    <p class="text-muted">Chúng tôi mã hóa dữ liệu trong quá trình chuyển và khi nghỉ, tuân thủ nguyên tắc quyền hạn thấp nhất, và ghi nhật ký truy cập cho sự minh bạch.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-lite">
+                    <div class="icon-pill mb-3"><i class="bi bi-graph-up"></i></div>
+                    <h5>Tác động</h5>
+                    <p class="text-muted">Các nhóm báo cáo thời gian sàng lọc nhanh hơn 50–80% và khớp ứng viên tốt hơn với CVision.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card-lite h-100">
+                    <h5>Những gì chúng tôi giá trị</h5>
+                    <ul class="values text-muted mt-2">
+                        <li>Sự rõ ràng hơn sự phức tạp</li>
+                        <li>Quyền riêng tư bởi thiết kế</li>
+                        <li>Tác động đo lường được cho khách hàng</li>
+                        <li>Giao diện dễ sử dụng, thân thiện</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card-lite h-100 d-flex align-items-center gap-3">
+                    <div>
+                        <h6 class="mb-1">Đội ngũ của chúng tôi</h6>
+                        <p class="text-muted mb-0">Chúng tôi là 2 sinh viên năm 4 của Hutech University với ước mơ đầy đam mê xây dựng một trang web có thể giúp rút ngắn thời gian phân loại CV.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="cta-box">
+            <h4 class="mb-2">Muốn làm việc với chúng tôi?</h4>
+            <p class="text-muted">Liên hệ với chúng tôi và chúng tôi sẽ rất vui để demo CVision và thảo luận về quy trình làm việc của bạn.</p>
+            <a href="https://www.facebook.com/haophan153" target="_blank" rel="noopener noreferrer" class="btn btn-primary-cta"><i class="bi bi-facebook me-1"></i> Liên hệ với chúng tôi</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

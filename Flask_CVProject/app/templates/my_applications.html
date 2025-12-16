@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block title %}Trạng thái ứng tuyển - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .page-header h1 {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-section:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .application-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .application-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.4s ease;
+    }
+    
+    .application-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .application-card:hover {
+        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.15);
+        transform: translateY(-6px);
+        border-color: #667eea;
+    }
+    
+    .job-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+    
+    .job-title a {
+        color: inherit;
+        text-decoration: none;
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transition: all 0.3s ease;
+    }
+    
+    .application-card:hover .job-title a {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .job-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .job-meta i {
+        margin-right: 0.25rem;
+        color: var(--primary-color);
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .status-badge::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .status-badge:hover::before {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .status-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+    
+    .status-reviewed {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+    
+    .status-shortlisted {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+    
+    .status-rejected {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+    
+    .status-hired {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534;
+    }
+    
+    .application-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e2e8f0;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .cv-info {
+        color: #64748b;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .cv-info i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .date-info {
+        color: #64748b;
+        font-size: 0.9rem;
+        text-align: right;
+    }
+    
+    .date-info i {
+        color: var(--primary-color);
+        margin-right: 0.25rem;
+    }
+    
+    .notes-section {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .application-card:hover .notes-section {
+        background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+        border-left-color: #667eea;
+    }
+    
+    .notes-title {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .notes-title i {
+        color: var(--primary-color);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        border: 2px dashed #e2e8f0;
+        color: #64748b;
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    
+    .empty-state h3 {
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    
+    /* Form Controls Enhancement */
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .application-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .date-info {
+            text-align: left;
+        }
+        
+        .filter-section {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="page-header">
+        <h1><i class="bi bi-clipboard-check me-2"></i>Trạng thái ứng tuyển</h1>
+        <p class="text-muted">Theo dõi các đơn ứng tuyển của bạn</p>
+    </div>
+    
+    <div class="filter-section">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Lọc theo trạng thái</label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="pending">Chờ xem xét</option>
+                    <option value="reviewed">Đã xem</option>
+                    <option value="shortlisted">Đã chọn</option>
+                    <option value="rejected">Đã từ chối</option>
+                    <option value="hired">Đã tuyển</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sắp xếp theo</label>
+                <select id="sortFilter" class="form-select">
+                    <option value="date">Ngày nộp (mới nhất)</option>
+                    <option value="job_title">Tên công việc (A-Z)</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-primary w-100" onclick="loadApplications()" style="border-radius: 12px; font-weight: 600; padding: 0.75rem;">
+                    <i class="bi bi-funnel me-2"></i>Áp dụng bộ lọc
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="applicationsContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div id="paginationContainer" class="d-flex justify-content-center mt-4"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentStatus = '';
+    let currentSort = 'date';
+    let currentPage = 1;
+    
+    async function loadApplications(page = 1) {
+        const container = document.getElementById('applicationsContainer');
+        const token = localStorage.getItem('access_token');
+        
+        if (!token) {
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Vui lòng đăng nhập để xem trạng thái ứng tuyển
+                </div>
+            `;
+            return;
+        }
+        
+        currentStatus = document.getElementById('statusFilter').value;
+        currentSort = document.getElementById('sortFilter').value;
+        currentPage = page;
+        
+        try {
+            let url = `/api/candidate/applications?sort_by=${currentSort}&page=${page}&per_page=10`;
+            if (currentStatus) {
+                url += `&status=${currentStatus}`;
+            }
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                displayApplications(data.applications);
+                if (data.pagination) {
+                    displayPagination(data.pagination);
+                }
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Không thể tải danh sách ứng tuyển'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải danh sách ứng tuyển
+                </div>
+            `;
+        }
+    }
+    
+    function displayApplications(applications) {
+        const container = document.getElementById('applicationsContainer');
+        
+        if (applications.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h3>Chưa có đơn ứng tuyển nào</h3>
+                    <p>Bạn chưa ứng tuyển vào vị trí nào. Hãy tìm việc và ứng tuyển ngay!</p>
+                    <a href="/jobs" class="btn btn-primary mt-3" style="padding: 0.6rem 2.5rem; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; line-height: 1;">
+                        <i class="" style="font-size: 0.9rem; vertical-align: middle; line-height: 1;"></i><span>Tìm việc làm</span>
+                    </a>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        
+        applications.forEach(app => {
+            const statusClass = `status-${app.status}`;
+            const appliedDate = new Date(app.applied_at).toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const reviewedDate = app.reviewed_at 
+                ? new Date(app.reviewed_at).toLocaleDateString('vi-VN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : null;
+            
+            // Status icon mapping
+            const statusIcons = {
+                'pending': 'bi-clock-history',
+                'reviewed': 'bi-eye',
+                'shortlisted': 'bi-check-circle',
+                'rejected': 'bi-x-circle',
+                'hired': 'bi-trophy'
+            };
+            const statusIcon = statusIcons[app.status] || 'bi-info-circle';
+            
+            html += `
+                <div class="application-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                        <h3 class="job-title flex-grow-1">
+                            <a href="/jobs/${app.job.id}">${app.job.title}</a>
+                        </h3>
+                        <span class="status-badge ${statusClass}">
+                            <i class="bi ${statusIcon}"></i>
+                            ${app.status_text}
+                        </span>
+                    </div>
+                    
+                    <div class="job-meta">
+                        <span><i class="bi bi-geo-alt"></i>${app.job.location || 'Chưa cập nhật'}</span>
+                        ${app.job.category ? `<span><i class="bi bi-tag"></i>${app.job.category}</span>` : ''}
+                        ${app.job.employment_type ? `<span><i class="bi bi-briefcase"></i>${app.job.employment_type}</span>` : ''}
+                    </div>
+                    
+                    <div class="application-info">
+                        <div class="cv-info">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            <div>
+                            <strong>CV đã nộp:</strong> ${app.cv.file_name}
+                                ${app.cv.predicted_category ? `<br><span class="text-muted small">(${app.cv.predicted_category})</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="date-info">
+                            <div><i class="bi bi-calendar"></i>Nộp: ${appliedDate}</div>
+                            ${reviewedDate ? `<div class="mt-1"><i class="bi bi-eye"></i>Xem: ${reviewedDate}</div>` : ''}
+                        </div>
+                    </div>
+                    
+                    ${app.status !== 'pending' ? `
+                    <div class="notes-section">
+                        <div class="notes-title">
+                            <i class="bi bi-envelope-check"></i>
+                            Thông báo
+                        </div>
+                        <div style="color: #475569; line-height: 1.6;">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Vui lòng kiểm tra email để biết thêm các thông tin chi tiết
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    function displayPagination(pagination) {
+        const container = document.getElementById('paginationContainer');
+        
+        if (!pagination || pagination.pages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = '<nav><ul class="pagination">';
+        
+        // Previous button
+        if (pagination.page > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="loadApplications(${pagination.page - 1}); return false;">Trước</a></li>`;
+        }
+        
+        // Page numbers
+        for (let i = 1; i <= pagination.pages; i++) {
+            if (i === pagination.page) {
+                html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+            } else {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="loadApplications(${i}); return false;">${i}</a></li>`;
+            }
+        }
+        
+        // Next button
+        if (pagination.page < pagination.pages) {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="loadApplications(${pagination.page + 1}); return false;">Sau</a></li>`;
+        }
+        
+        html += '</ul></nav>';
+        container.innerHTML = html;
+    }
+    
+    // Load applications on page load
+    document.addEventListener('DOMContentLoaded', () => loadApplications(1));
+</script>
+{% endblock %}
+

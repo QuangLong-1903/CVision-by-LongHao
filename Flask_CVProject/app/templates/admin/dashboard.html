@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .page-header h1 {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.4s ease;
+    }
+    
+    .stat-card.users::before { 
+        background: linear-gradient(180deg, #4f46e5 0%, #6366f1 100%);
+    }
+    
+    .stat-card.jobs::before { 
+        background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+    }
+    
+    .stat-card.cvs::before { 
+        background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    }
+    
+    .stat-card.applications::before { 
+        background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .stat-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        transform: translateY(-6px);
+        border-color: #667eea;
+    }
+    
+    .stat-card.users:hover { border-color: #4f46e5; }
+    .stat-card.jobs:hover { border-color: #06b6d4; }
+    .stat-card.cvs:hover { border-color: #10b981; }
+    .stat-card.applications:hover { border-color: #f59e0b; }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card.users .stat-icon {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        color: #4f46e5;
+    }
+    
+    .stat-card.jobs .stat-icon {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #06b6d4;
+    }
+    
+    .stat-card.cvs .stat-icon {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #10b981;
+    }
+    
+    .stat-card.applications .stat-icon {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #f59e0b;
+    }
+    
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card.users .stat-number {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.jobs .stat-number {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.cvs .stat-number {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.applications .stat-number {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .stat-subtext {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+    
+    .chart-title i {
+        color: var(--primary-color);
+        font-size: 1.3rem;
+    }
+    
+    .chart-filter {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    
+    .chart-filter select {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-filter select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+        }
+        
+        .chart-container {
+            padding: 1.5rem;
+        }
+        
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+                <p class="text-muted mb-0">Tổng quan về hệ thống và hoạt động của ứng dụng</p>
+            </div>
+            <div>
+                <a href="/admin/users" class="btn btn-primary" style="border-radius: 12px; font-weight: 600; padding: 0.75rem 1.5rem;">
+                    <i class="bi bi-people me-2"></i>Quản lý tài khoản
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div id="statsContainer" class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card users">
+                <div class="stat-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-label">Tổng số tài khoản</div>
+                <div class="stat-subtext">
+                    <span id="candidates">-</span> ứng viên | 
+                    <span id="recruiters">-</span> nhà tuyển dụng
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card jobs">
+                <div class="stat-icon">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <div class="stat-number" id="totalJobs">-</div>
+                <div class="stat-label">Tổng số bài đăng</div>
+                <div class="stat-subtext">
+                    <span id="activeJobs">-</span> đang hoạt động
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card cvs">
+                <div class="stat-icon">
+                    <i class="bi bi-file-earmark-person"></i>
+                </div>
+                <div class="stat-number" id="totalCVs">-</div>
+                <div class="stat-label">Tổng số CV</div>
+                <div class="stat-subtext">
+                    <span id="cvsLast7Days">-</span> trong 7 ngày qua
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card applications">
+                <div class="stat-icon">
+                    <i class="bi bi-file-earmark-check"></i>
+                </div>
+                <div class="stat-number" id="totalApplications">-</div>
+                <div class="stat-label">Tổng số đơn ứng tuyển</div>
+                <div class="stat-subtext">
+                    <span id="pendingApplications">-</span> đang chờ
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <i class="bi bi-bar-chart"></i>
+                        <span id="chartTitle">Thống kê 30 ngày qua</span>
+                    </h3>
+                    <div class="chart-filter">
+                        <label for="viewMode" class="form-label mb-0" style="font-weight: 600;">Xem theo:</label>
+                        <select id="viewMode" class="form-select" onchange="changeViewMode()">
+                            <option value="daily">30 ngày qua</option>
+                            <option value="monthly">12 tháng qua</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="statsChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    let statsChart = null;
+    let currentViewMode = 'daily';
+    let statisticsData = null;
+    
+    async function loadStatistics() {
+        const token = localStorage.getItem('access_token');
+        
+        try {
+            const response = await fetch('/admin/api/statistics', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                statisticsData = data.statistics;
+                
+                // Update stat cards
+                document.getElementById('totalUsers').textContent = statisticsData.users.total;
+                document.getElementById('candidates').textContent = statisticsData.users.candidates;
+                document.getElementById('recruiters').textContent = statisticsData.users.recruiters;
+                
+                document.getElementById('totalJobs').textContent = statisticsData.jobs.total;
+                document.getElementById('activeJobs').textContent = statisticsData.jobs.active;
+                
+                document.getElementById('totalCVs').textContent = statisticsData.cvs.total;
+                document.getElementById('cvsLast7Days').textContent = statisticsData.cvs.last_7_days;
+                
+                document.getElementById('totalApplications').textContent = statisticsData.applications.total;
+                document.getElementById('pendingApplications').textContent = statisticsData.applications.pending;
+                
+                // Update chart based on current view mode
+                changeViewMode();
+            } else {
+                console.error('Error loading statistics:', data.message);
+            }
+        } catch (error) {
+            console.error('Error loading statistics:', error);
+        }
+    }
+    
+    function changeViewMode() {
+        const viewMode = document.getElementById('viewMode').value;
+        currentViewMode = viewMode;
+        
+        if (viewMode === 'daily') {
+            document.getElementById('chartTitle').textContent = 'Thống kê 30 ngày qua';
+            updateChart(statisticsData.daily_stats, 'daily');
+        } else {
+            document.getElementById('chartTitle').textContent = 'Thống kê 12 tháng qua';
+            const monthlyStats = convertToMonthlyStats(statisticsData.daily_stats);
+            updateChart(monthlyStats, 'monthly');
+        }
+    }
+    
+    function convertToMonthlyStats(dailyStats) {
+        // Group daily stats by month
+        const monthlyMap = {};
+        
+        dailyStats.forEach(stat => {
+            const date = new Date(stat.date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!monthlyMap[monthKey]) {
+                monthlyMap[monthKey] = {
+                    date: monthKey,
+                    jobs: 0,
+                    cvs: 0
+                };
+            }
+            
+            monthlyMap[monthKey].jobs += stat.jobs;
+            monthlyMap[monthKey].cvs += stat.cvs;
+        });
+        
+        // Convert to array and sort
+        const monthlyArray = Object.values(monthlyMap).sort((a, b) => a.date.localeCompare(b.date));
+        
+        // Get last 12 months
+        const now = new Date();
+        const last12Months = [];
+        
+        for (let i = 11; i >= 0; i--) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            const monthData = monthlyArray.find(m => m.date === monthKey);
+            if (monthData) {
+                last12Months.push(monthData);
+            } else {
+                last12Months.push({
+                    date: monthKey,
+                    jobs: 0,
+                    cvs: 0
+                });
+            }
+        }
+        
+        return last12Months;
+    }
+    
+    function updateChart(stats, mode) {
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        
+        const labels = stats.map(stat => {
+            if (mode === 'daily') {
+                const date = new Date(stat.date);
+                return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            } else {
+                // Format: "Tháng 1/2024"
+                const [year, month] = stat.date.split('-');
+                const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                                   'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+                return `${monthNames[parseInt(month) - 1]}/${year}`;
+            }
+        });
+        
+        const jobsData = stats.map(stat => stat.jobs);
+        const cvsData = stats.map(stat => stat.cvs);
+        
+        if (statsChart) {
+            statsChart.destroy();
+        }
+        
+        statsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Bài đăng',
+                        data: jobsData,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#06b6d4',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    },
+                    {
+                        label: 'CV mới',
+                        data: cvsData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 13,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadStatistics);
+</script>
+{% endblock %}
+

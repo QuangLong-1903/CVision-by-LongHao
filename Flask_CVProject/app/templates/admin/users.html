@@ -1,0 +1,806 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý tài khoản - Admin - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 2.5rem;
+        padding: 2.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        filter: blur(60px);
+    }
+    
+    .page-header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-header p {
+        color: rgba(255, 255, 255, 0.9);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+    
+    .filter-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .filter-section .form-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .filter-section .form-control,
+    .filter-section .form-select {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-section .form-control:focus,
+    .filter-section .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+    
+    .user-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .user-card:nth-child(1) { animation-delay: 0.1s; }
+    .user-card:nth-child(2) { animation-delay: 0.2s; }
+    .user-card:nth-child(3) { animation-delay: 0.3s; }
+    .user-card:nth-child(4) { animation-delay: 0.4s; }
+    
+    .user-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.4s ease;
+    }
+    
+    .user-card.active::before {
+        background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    }
+    
+    .user-card.inactive::before {
+        background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .user-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .user-card:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        transform: translateY(-4px);
+        border-color: #667eea;
+    }
+    
+    .user-card.inactive {
+        opacity: 0.85;
+    }
+    
+    .user-card.active {
+        border-left-color: #10b981;
+    }
+    
+    .user-card.inactive {
+        border-left-color: #ef4444;
+    }
+    
+    .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1.5rem;
+        gap: 1.5rem;
+    }
+    
+    .user-avatar-container {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .user-card:hover .user-avatar-container {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .user-info {
+        flex: 1;
+    }
+    
+    .user-info h5 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--dark-color);
+        font-size: 1.3rem;
+        margin-bottom: 0.75rem;
+        transition: color 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .user-card:hover .user-info h5 {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .user-meta {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .user-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .role-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .role-badge.candidate {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        color: #4f46e5;
+    }
+    
+    .role-badge.recruiter {
+        background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+        color: #06b6d4;
+    }
+    
+    .role-badge.admin {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #f59e0b;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .status-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .status-badge.active {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+    
+    .status-badge.inactive {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+    
+    .user-stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e2e8f0;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        flex: 1;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .user-card:hover .stat-item {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        transform: translateY(-4px);
+        border-color: #c7d2fe;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    .user-card:hover .stat-item::before {
+        transform: scaleX(1);
+    }
+    
+    .stat-item .number {
+        font-size: 2.25rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+    
+    .stat-item .label {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+    
+    /* Action Buttons */
+    .btn-sm {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: none;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        border: 2px dashed #e2e8f0;
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    
+    .empty-state h4 {
+        color: var(--dark-color);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Pagination */
+    .pagination {
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        border-radius: 10px;
+        margin: 0 0.25rem;
+        border: 2px solid #e2e8f0;
+        color: var(--dark-color);
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+    }
+    
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .user-card {
+            padding: 1.5rem;
+        }
+        
+        .user-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-people me-2"></i>Quản lý tài khoản</h1>
+                <p class="text-muted mb-0">Quản lý tất cả tài khoản trong hệ thống</p>
+            </div>
+            <div>
+                <a href="/admin/dashboard" class="btn btn-light" style="border-radius: 12px; font-weight: 600; padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3); color: white; backdrop-filter: blur(10px);">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="Email hoặc họ tên...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Vai trò</label>
+                <select class="form-select" id="roleFilter">
+                    <option value="">Tất cả</option>
+                    <option value="candidate">Ứng viên</option>
+                    <option value="recruiter">Nhà tuyển dụng</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tất cả</option>
+                    <option value="true">Đang hoạt động</option>
+                    <option value="false">Đã khóa</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary w-100" onclick="loadUsers()" style="border-radius: 12px; font-weight: 600; padding: 0.75rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <i class="bi bi-search me-1"></i>Tìm kiếm
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Users List -->
+    <div id="usersContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    <nav id="paginationContainer" class="mt-4"></nav>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmToggleModal" tabindex="-1" aria-labelledby="confirmToggleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding: 1.5rem;">
+                <h5 class="modal-title" id="confirmToggleModalLabel" style="font-weight: 700; display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 1.5rem;"></i>
+                    <span>Xác nhận</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <p id="confirmToggleMessage" style="font-size: 1rem; line-height: 1.6; color: #374151; margin: 0;"></p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid rgba(0, 0, 0, 0.1); padding: 1.5rem; gap: 10px;">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 600; padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb;">
+                    <i class="bi bi-x-lg me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmToggleBtn" style="border-radius: 12px; font-weight: 600; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <i class="bi bi-check-lg me-2"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPage = 1;
+    const perPage = 20;
+    
+    async function loadUsers(page = 1) {
+        currentPage = page;
+        const container = document.getElementById('usersContainer');
+        const token = localStorage.getItem('access_token');
+        
+        const search = document.getElementById('searchInput').value;
+        const role = document.getElementById('roleFilter').value;
+        const isActive = document.getElementById('statusFilter').value;
+        
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        
+        try {
+            const params = new URLSearchParams({
+                page: page,
+                per_page: perPage,
+                search: search,
+                role: role,
+                is_active: isActive
+            });
+            
+            const response = await fetch(`/admin/api/users?${params.toString()}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.users.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h4>Không tìm thấy tài khoản nào</h4>
+                            <p class="text-muted">Thử thay đổi bộ lọc để tìm kiếm</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = data.users.map((user, index) => {
+                    const statusClass = user.is_active ? 'active' : 'inactive';
+                    const roleClass = user.role;
+                    const displayName = user.full_name || user.email.split('@')[0];
+                    const initial = displayName.charAt(0).toUpperCase();
+                    
+                    return `
+                        <div class="user-card ${statusClass}" style="animation-delay: ${index * 0.1}s">
+                            <div class="user-header">
+                                <div class="user-avatar-container">
+                                    ${initial}
+                                </div>
+                                <div class="user-info">
+                                    <h5>
+                                        ${displayName}
+                                    </h5>
+                                    <div class="user-meta">
+                                        <span class="role-badge ${roleClass}">
+                                            <i class="bi ${user.role === 'candidate' ? 'bi-person' : user.role === 'recruiter' ? 'bi-briefcase' : 'bi-shield-check'}"></i>
+                                            ${getRoleLabel(user.role)}
+                                        </span>
+                                        <span class="status-badge ${statusClass}">
+                                            <i class="bi ${user.is_active ? 'bi-check-circle' : 'bi-x-circle'}"></i>
+                                            ${user.is_active ? 'Đang hoạt động' : 'Đã khóa'}
+                                        </span>
+                                    </div>
+                                    <div class="user-meta mt-2">
+                                        <div class="user-meta-item">
+                                            <i class="bi bi-envelope"></i>
+                                            <span>${user.email}</span>
+                                        </div>
+                                        <div class="user-meta-item">
+                                            <i class="bi bi-calendar"></i>
+                                            <span>${new Date(user.created_at).toLocaleDateString('vi-VN')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm ${user.is_active ? 'btn-danger' : 'btn-success'}" 
+                                            onclick="toggleUserActive(${user.id}, ${user.is_active})"
+                                            style="min-width: 120px;">
+                                        <i class="bi bi-${user.is_active ? 'lock' : 'unlock'} me-1"></i>
+                                        ${user.is_active ? 'Khóa' : 'Mở khóa'}
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="user-stats">
+                                ${user.role === 'candidate' ? `
+                                <div class="stat-item">
+                                    <div class="number">${user.cv_count}</div>
+                                    <div class="label">CV</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="number">${user.application_count}</div>
+                                    <div class="label">Đơn ứng tuyển</div>
+                                </div>
+                                ` : ''}
+                                ${user.role === 'recruiter' ? `
+                                <div class="stat-item">
+                                    <div class="number">${user.job_count}</div>
+                                    <div class="label">Bài đăng</div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Pagination
+                updatePagination(data.pagination);
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Lỗi khi tải danh sách users'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải danh sách users
+                </div>
+            `;
+        }
+    }
+    
+    function getRoleLabel(role) {
+        const labels = {
+            'candidate': 'Ứng viên',
+            'recruiter': 'Nhà tuyển dụng',
+            'admin': 'Admin'
+        };
+        return labels[role] || role;
+    }
+    
+    function updatePagination(pagination) {
+        const container = document.getElementById('paginationContainer');
+        
+        if (pagination.pages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = '<ul class="pagination justify-content-center">';
+        
+        // Previous button
+        html += `
+            <li class="page-item ${pagination.page === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadUsers(${pagination.page - 1}); return false;">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+        `;
+        
+        // Page numbers
+        for (let i = 1; i <= pagination.pages; i++) {
+            if (i === 1 || i === pagination.pages || (i >= pagination.page - 2 && i <= pagination.page + 2)) {
+                html += `
+                    <li class="page-item ${i === pagination.page ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="loadUsers(${i}); return false;">${i}</a>
+                    </li>
+                `;
+            } else if (i === pagination.page - 3 || i === pagination.page + 3) {
+                html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+        }
+        
+        // Next button
+        html += `
+            <li class="page-item ${pagination.page === pagination.pages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadUsers(${pagination.page + 1}); return false;">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        `;
+        
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+    
+    let pendingToggleAction = null;
+    
+    async function toggleUserActive(userId, currentStatus) {
+        const action = currentStatus ? 'khóa' : 'mở khóa';
+        const actionText = currentStatus ? 'khóa' : 'mở khóa';
+        
+        // Store the action to execute after confirmation
+        pendingToggleAction = { userId, currentStatus };
+        
+        // Show confirmation modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmToggleModal'));
+        const messageEl = document.getElementById('confirmToggleMessage');
+        messageEl.textContent = `Bạn có chắc chắn muốn ${actionText} tài khoản này không?`;
+        
+        modal.show();
+    }
+    
+    // Handle confirm button click
+    document.getElementById('confirmToggleBtn').addEventListener('click', async function() {
+        if (!pendingToggleAction) return;
+        
+        const { userId, currentStatus } = pendingToggleAction;
+        pendingToggleAction = null;
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmToggleModal'));
+        modal.hide();
+        
+        const token = localStorage.getItem('access_token');
+        
+        try {
+            const response = await fetch(`/admin/api/users/${userId}/toggle-active`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (typeof Toast !== 'undefined') {
+                    Toast.success(data.message);
+                } else {
+                    alert(data.message);
+                }
+                loadUsers(currentPage);
+            } else {
+                if (typeof Toast !== 'undefined') {
+                    Toast.error(data.message || 'Có lỗi xảy ra');
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra');
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling user active:', error);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Có lỗi xảy ra khi cập nhật trạng thái tài khoản');
+            } else {
+                alert('Có lỗi xảy ra khi cập nhật trạng thái tài khoản');
+            }
+        }
+    });
+    
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            loadUsers(1);
+        }
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => loadUsers(1));
+</script>
+{% endblock %}
+

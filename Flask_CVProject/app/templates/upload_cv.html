@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Tải lên CV - CVision
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* Đảm bảo container căn giữa với padding đều hai bên */
+    main .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+    
+    .upload-container {
+      min-height: calc(100vh - 180px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .upload-card {
+      max-width: 600px;
+      width: 100%;
+      padding: 45px 40px;
+      border-radius: 22px;
+      background: #ffffff;
+      box-shadow: 0px 12px 40px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.4s ease-out;
+      margin: 0 auto; /* Căn giữa hoàn hảo */
+      box-sizing: border-box;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .file-label {
+      border: 2px dashed #6c757d;
+      padding: 60px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 15px;
+      background: #f8f9fa;
+      position: relative;
+    }
+    
+    .file-label:hover {
+      border-color: #6366f1;
+      background-color: #eef2ff;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+    }
+    
+    .upload-icon {
+      font-size: 3.2rem;
+      color: #6c757d;
+      margin-bottom: 1rem;
+      transition: 0.3s;
+    }
+    
+    .file-label:hover .upload-icon {
+      color: #6366f1;
+    }
+    
+    .btn-upload {
+      padding: 14px 30px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #6366f1, #4f46e5);
+      color: white;
+      transition: 0.3s;
+    }
+    
+    .btn-upload:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+    }
+    
+    .fileName {
+      font-size: 1.1rem;
+      color: #495057;
+      font-weight: 500;
+    }
+    
+    .supported-formats {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 8px;
+    }
+    
+    /* Căn giữa chữ tiêu đề và khoảng cách đẹp hơn */
+    h2 {
+      font-weight: 700;
+    }
+    
+    /* Responsive - Đảm bảo căn giữa trên mọi màn hình */
+    @media (max-width: 768px) {
+      main .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    
+      .upload-card {
+        max-width: 100%;
+        padding: 35px 25px;
+      }
+    
+      .file-label {
+        padding: 50px 20px;
+      }
+    
+      .upload-icon {
+        font-size: 2.5rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      main .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+    
+      .upload-card {
+        padding: 30px 20px;
+      }
+    
+      .file-label {
+        padding: 40px 15px;
+      }
+    }
+    
+    /* Đảm bảo căn giữa hoàn hảo trên màn hình lớn */
+    @media (min-width: 1200px) {
+      main .container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="upload-container">
+    <div class="upload-card">
+      <h2 class="text-center mb-4">
+        <i class="bi bi-cloud-upload text-primary"></i>
+        Upload Your CV
+      </h2>
+      <p class="text-center text-muted mb-4">Upload your CV to the system to automatically classify and manage</p>
+
+      <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <label for="file" class="file-label d-block mb-4" id="fileLabel">
+          <i class="bi bi-cloud-upload upload-icon"></i>
+          <div class="fileName" id="fileName">Drag and drop file or click to select</div>
+          <div class="supported-formats">Supported formats: PDF, DOCX, TXT, JPG, PNG, JPEG</div>
+        </label>
+        <input type="file" name="file" id="file" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png" class="d-none" required />
+
+        <!-- Thêm lựa chọn format CV -->
+        <div class="mb-3">
+          <label for="cvFormat" class="form-label">Chọn format CV</label>
+          <select id="cvFormat" name="template" class="form-select">
+            <option value="classic">Classic</option>
+            <option value="modern">Modern</option>
+            <option value="creative">Creative</option>
+            <option value="professional">Professional</option>
+          </select>
+        </div>
+
+        <!-- Thêm lựa chọn loại file xuất -->
+        <div class="mb-3">
+          <label for="cvExportFormat" class="form-label">Xuất file dạng</label>
+          <select id="cvExportFormat" name="format" class="form-select">
+            <option value="pdf">PDF</option>
+            <option value="docx">Word (.docx)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-upload w-100" id="uploadBtn"><i class="bi bi-upload me-2"></i>Upload now</button>
+      </form>
+
+      <div id="uploadMessage" class="alert d-none mt-3" role="alert"></div>
+    </div>
+  </div>
+  <div id="cvPreviewContainer" class="mt-4 d-none">
+    <h4 class="mb-3">Preview CV</h4>
+    <div id="cvPreview" class="p-4 border rounded shadow-sm" style="background:#fff; min-height:300px;">
+      <!-- Nội dung CV sẽ được render ở đây -->
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    const fileInput = document.getElementById('file')
+    const fileName = document.getElementById('fileName')
+    const fileLabel = document.getElementById('fileLabel')
+    // Drag and drop handling
+    ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+      fileLabel.addEventListener(eventName, preventDefaults, false)
+      document.addEventListener(eventName, preventDefaults, false)
+    })
+    
+    function preventDefaults(e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    ;['dragenter', 'dragover'].forEach((eventName) => {
+      fileLabel.addEventListener(eventName, highlight, false)
+    })
+    ;['dragleave', 'drop'].forEach((eventName) => {
+      fileLabel.addEventListener(eventName, unhighlight, false)
+    })
+    
+    function highlight(e) {
+      fileLabel.style.borderColor = '#4f46e5'
+      fileLabel.style.backgroundColor = '#f0f4ff'
+    }
+    
+    function unhighlight(e) {
+      fileLabel.style.borderColor = '#6c757d'
+      fileLabel.style.backgroundColor = '#f8f9fa'
+    }
+    
+    fileLabel.addEventListener('drop', handleDrop, false)
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer
+      const file = dt.files[0]
+    
+      if (file) {
+        // Check file type
+        const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png']
+        const fileNameLower = file.name.toLowerCase()
+        const isValid = allowedExtensions.some((ext) => fileNameLower.endsWith(ext))
+    
+        if (!isValid) {
+          if (typeof Toast !== 'undefined') {
+              Toast.error('Chỉ cho phép file PDF, DOCX, TXT, JPG, JPEG và PNG.');
+          } else {
+              alert('Only PDF, DOCX, TXT, JPG, JPEG, and PNG files are allowed.');
+          }
+          return
+        }
+    
+        const dt2 = new DataTransfer()
+        dt2.items.add(file)
+        fileInput.files = dt2.files
+        updateFileName(file)
+      }
+    }
+    
+    fileInput.addEventListener('change', (e) => {
+      updateFileName(e.target.files[0])
+    })
+    
+    function updateFileName(file) {
+      if (file) {
+        fileName.innerHTML = `<i class="bi bi-file-earmark-text me-2"></i>${file.name}`
+      } else {
+        fileName.innerHTML = 'Drag and drop file or click to select'
+      }
+    }
+    
+    // Form submission - Use API with JWT if logged in, otherwise use form POST
+    const uploadForm = document.getElementById('uploadForm')
+    const uploadBtn = document.getElementById('uploadBtn')
+    const uploadMessage = document.getElementById('uploadMessage')
+    
+    function showUploadMessage(type, message) {
+      if (!uploadMessage) return
+      uploadMessage.className = `alert alert-${type}`
+      uploadMessage.textContent = message
+      uploadMessage.classList.remove('d-none')
+      setTimeout(() => uploadMessage.classList.add('d-none'), 5000)
+    }
+    
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault()
+    
+        const file = fileInput.files[0]
+        if (!file) {
+          showUploadMessage('danger', 'Please select a file first.')
+          return
+        }
+    
+        const token = localStorage.getItem('access_token')
+    
+        // If user is logged in, use API with JWT
+        if (token) {
+          if (uploadBtn) {
+            uploadBtn.disabled = true
+            uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Uploading...'
+          }
+    
+          try {
+            const formData = new FormData()
+            formData.append('file', file)
+    
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`
+              },
+              body: formData
+            })
+    
+            const data = await res.json()
+    
+            if (res.ok && data.success) {
+              const message = data.message || 'CV uploaded successfully!'
+              showUploadMessage('success', message)
+    
+              // Redirect to create-cv after 1.5 seconds
+              setTimeout(() => {
+                window.location.href = '/create-cv'
+              }, 1500)
+            } else {
+              throw new Error(data.message || 'Upload failed')
+            }
+          } catch (error) {
+            console.error('Upload error:', error)
+            showUploadMessage('danger', error.message || 'Failed to upload CV. Please try again.')
+            if (uploadBtn) {
+              uploadBtn.disabled = false
+              uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Upload now'
+            }
+          }
+        } else {
+          // If not logged in, use form POST (fallback)
+          uploadForm.submit()
+        }
+      })
+      const template = document.getElementById('cvFormat').value
+      const format = document.getElementById('cvExportFormat').value
+    
+      // Khi gọi API export
+      const payload = {
+        full_name: '...',
+        email: '...',
+        phone: '...',
+        summary: '...',
+        experiences: [],
+        education: '...',
+        skills: '...',
+        template: template,
+        format: format
+      }
+      const cvFormatSelect = document.getElementById('cvFormat')
+      const cvPreviewContainer = document.getElementById('cvPreviewContainer')
+      const cvPreview = document.getElementById('cvPreview')
+    
+      if (cvFormatSelect) {
+        cvFormatSelect.addEventListener('change', async () => {
+          const template = cvFormatSelect.value
+    
+          // Thu thập dữ liệu từ form
+          const payload = {
+            full_name: document.getElementById('fullName')?.value || 'Nguyễn Văn A',
+            email: document.getElementById('email')?.value || 'example@email.com',
+            phone: document.getElementById('phone')?.value || '0123456789',
+            summary: document.getElementById('summary')?.value || 'Professional summary here...',
+            experiences: [{ role: 'Software Engineer', company: 'ABC Corp', years: '2020-2023' }],
+            education: document.getElementById('education')?.value || 'Đại học CNTT',
+            skills: document.getElementById('skills')?.value || 'Python, Flask, SQL'
+          }
+    
+          try {
+            Loading.show('Đang tạo preview...')
+            const res = await Auth.fetchAuth('/api/cv/export', {
+              method: 'POST',
+              body: JSON.stringify({ ...payload, template, format: 'html' }) // format=html để chỉ preview
+            })
+    
+            if (res.ok) {
+              const html = await res.text()
+              cvPreview.innerHTML = html
+              cvPreviewContainer.classList.remove('d-none')
+              Toast.success('Preview CV đã sẵn sàng!')
+            } else {
+              const data = await res.json()
+              Toast.error(data.error || 'Không thể tạo preview')
+            }
+          } catch (err) {
+            console.error(err)
+            Toast.error('Có lỗi khi tạo preview')
+          } finally {
+            Loading.hide()
+          }
+        })
+      }
+    }
+  </script>
+{% endblock %}

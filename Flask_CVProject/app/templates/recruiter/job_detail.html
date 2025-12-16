@@ -1,0 +1,617 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết bài đăng tuyển dụng - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .job-detail-header {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .job-detail-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .job-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .job-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        color: #64748b;
+    }
+    
+    .job-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .job-meta span:hover {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        transform: translateY(-2px);
+    }
+    
+    .job-meta i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .job-content {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .job-content:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid;
+        border-image: linear-gradient(90deg, #667eea 0%, #764ba2 100%) 1;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -3px;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+    }
+    
+    .section-content {
+        color: #475569;
+        line-height: 1.9;
+        white-space: pre-wrap;
+        font-size: 1.05rem;
+    }
+    
+    .stats-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .stats-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .stats-section h3 i {
+        color: var(--primary-color);
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 16px;
+        padding: 1.75rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        border: 2px solid #e2e8f0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .stat-card:hover {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-color: #667eea;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.15);
+        transform: translateY(-4px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    
+    .salary-display {
+        background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+        border: 2px solid #c7d2fe;
+    }
+    
+    .salary-display {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stats-section .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-section .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .stats-section .btn-primary:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    }
+    
+    .stats-section .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    
+    .stats-section .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-buttons .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .action-buttons .btn-secondary {
+        background: #64748b;
+        border: none;
+        color: white;
+    }
+    
+    .action-buttons .btn-secondary:hover {
+        background: #475569;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    }
+    
+    .action-buttons .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .action-buttons .btn-primary:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    }
+    
+    .action-buttons .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: none;
+    }
+    
+    .action-buttons .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Alert Enhancement */
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #0c4a6e;
+        border-left: 4px solid #06b6d4;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+        border-left: 4px solid #f59e0b;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .job-title {
+            font-size: 2rem;
+        }
+        
+        .job-detail-header,
+        .job-content {
+            padding: 1.5rem;
+        }
+        
+        .stats-section {
+            position: static;
+            margin-top: 2rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="jobDetailContainer">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Get job ID from template
+    const jobId = parseInt('{{ job_id }}', 10) || 0;
+    
+    async function loadJobDetail() {
+        const container = document.getElementById('jobDetailContainer');
+        const token = localStorage.getItem('access_token');
+        
+        try {
+            const response = await fetch(`/api/recruiter/jobs/${jobId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                displayJobDetail(data.job);
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Không tìm thấy bài đăng này'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải chi tiết bài đăng
+                </div>
+            `;
+        }
+    }
+    
+    async function loadApplicationStats() {
+        const token = localStorage.getItem('access_token');
+        
+        try {
+            const response = await fetch(`/api/recruiter/jobs/${jobId}/applications`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Count by status
+                const statusCounts = {
+                    pending: 0,
+                    reviewed: 0,
+                    shortlisted: 0,
+                    rejected: 0,
+                    hired: 0
+                };
+                
+                data.applications.forEach(app => {
+                    if (statusCounts.hasOwnProperty(app.status)) {
+                        statusCounts[app.status]++;
+                    }
+                });
+                
+                return {
+                    total: data.total,
+                    byStatus: statusCounts
+                };
+            }
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+        
+        return { total: 0, byStatus: {} };
+    }
+    
+    async function displayJobDetail(job) {
+        const container = document.getElementById('jobDetailContainer');
+        const stats = await loadApplicationStats();
+        
+        const salaryText = job.salary_min && job.salary_max 
+            ? `${formatSalary(job.salary_min)} - ${formatSalary(job.salary_max)} VNĐ`
+            : job.salary_min 
+                ? `Từ ${formatSalary(job.salary_min)} VNĐ`
+                : 'Thỏa thuận';
+        
+        container.innerHTML = `
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h2 style="background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">
+                            <i class="bi bi-briefcase me-2"></i>Chi tiết bài đăng
+                        </h2>
+                        <p class="text-muted mb-0">Xem và quản lý thông tin chi tiết bài đăng tuyển dụng</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="/recruiter/jobs" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Quay lại
+                        </a>
+                        <a href="/recruiter/jobs/${job.id}/edit" class="btn btn-primary">
+                            <i class="bi bi-pencil me-2"></i>Chỉnh sửa
+                        </a>
+                        <button class="btn btn-danger delete-job-detail-btn" data-job-id="${job.id}" data-job-title="${(job.title || '').replace(/"/g, '&quot;')}">
+                            <i class="bi bi-trash me-2"></i>Xóa bài đăng
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="job-detail-header">
+                        <h1 class="job-title">${job.title}</h1>
+                        <div class="job-meta">
+                            <span><i class="bi bi-geo-alt"></i>${job.location || 'Chưa cập nhật'}</span>
+                            <span><i class="bi bi-tag"></i>${job.category_name || 'Chưa phân loại'}</span>
+                            <span><i class="bi bi-briefcase"></i>${job.employment_type || 'Full-time'}</span>
+                            <span><i class="bi bi-calendar"></i>${new Date(job.created_at).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        ${job.deadline ? `<div class="alert alert-info"><i class="bi bi-clock me-2"></i>Hạn nộp hồ sơ: ${new Date(job.deadline).toLocaleDateString('vi-VN')}</div>` : ''}
+                        ${!job.is_active ? '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>Bài đăng này đã bị tắt</div>' : ''}
+                    </div>
+                    
+                    <div class="job-content">
+                        <h2 class="section-title">
+                            <i class="bi bi-file-text"></i>Mô tả công việc
+                        </h2>
+                        <div class="section-content">${job.description || 'Chưa có mô tả'}</div>
+                    </div>
+                    
+                    ${job.requirements ? `
+                    <div class="job-content">
+                        <h2 class="section-title">
+                            <i class="bi bi-list-check"></i>Yêu cầu
+                        </h2>
+                        <div class="section-content">${job.requirements}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="stats-section">
+                        <h3 class="mb-3"><i class="bi bi-bar-chart me-2"></i>Thống kê</h3>
+                        
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.total}</div>
+                            <div class="stat-label">Tổng số CV ứng tuyển</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.byStatus.pending || 0}</div>
+                            <div class="stat-label">Chờ xem xét</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.byStatus.shortlisted || 0}</div>
+                            <div class="stat-label">Đã chọn</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.byStatus.hired || 0}</div>
+                            <div class="stat-label">Đã tuyển</div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div class="salary-display">
+                                <i class="bi bi-currency-dollar me-2"></i>${salaryText}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="/recruiter/applications?job_id=${job.id}" class="btn btn-primary">
+                                <i class="bi bi-person-lines-fill me-2"></i>Xem CV ứng tuyển
+                            </a>
+                            <a href="/recruiter/jobs/${job.id}/top-cvs" class="btn btn-outline-primary">
+                                <i class="bi bi-star-fill me-2"></i>Top CV phù hợp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Gắn sự kiện cho nút xóa ngay sau khi render
+        const deleteBtn = container.querySelector('.delete-job-detail-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function() {
+                const jobId = parseInt(this.getAttribute('data-job-id'));
+                const jobTitle = this.getAttribute('data-job-title');
+                confirmDeleteJob(jobId, jobTitle);
+            });
+        }
+    }
+    
+    function formatSalary(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount);
+    }
+    
+    let jobToDelete = null;
+    
+    function confirmDeleteJob(jobId, jobTitle) {
+        jobToDelete = jobId;
+        if (confirm(`Bạn có chắc chắn muốn xóa bài đăng "${jobTitle}"?\n\nHành động này không thể hoàn tác. Tất cả các đơn ứng tuyển liên quan cũng sẽ bị xóa.`)) {
+            deleteJob();
+        }
+    }
+    
+    async function deleteJob() {
+        if (!jobToDelete) return;
+        
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('Vui lòng đăng nhập lại');
+            } else {
+                alert('Vui lòng đăng nhập lại');
+            }
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/recruiter/jobs/${jobToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (typeof Toast !== 'undefined') {
+                    Toast.success('Xóa bài đăng thành công!');
+                } else {
+                    alert('Xóa bài đăng thành công!');
+                }
+                setTimeout(() => {
+                    window.location.href = '/recruiter/jobs';
+                }, 1500);
+            } else {
+                if (typeof Toast !== 'undefined') {
+                    Toast.error(data.message || 'Không thể xóa bài đăng');
+                } else {
+                    alert(data.message || 'Không thể xóa bài đăng');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Có lỗi xảy ra khi xóa bài đăng');
+            } else {
+                alert('Có lỗi xảy ra khi xóa bài đăng');
+            }
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadJobDetail);
+</script>
+{% endblock %}
+

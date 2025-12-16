@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Top CV phù hợp - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .cv-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .cv-card:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    .cv-card.applied {
+        border-left-color: #28a745;
+    }
+    
+    .cv-card.unapplied {
+        border-left-color: #ffc107;
+    }
+    
+    .cv-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+    
+    .cv-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+    
+    .confidence-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .confidence-badge.high {
+        background: #28a745;
+    }
+    
+    .confidence-badge.medium {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .confidence-badge.low {
+        background: #dc3545;
+    }
+    
+    .cv-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .applied-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #28a745;
+        color: white;
+    }
+    
+    .unapplied-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-star-fill me-2"></i>Top CV phù hợp</h1>
+                <p class="text-muted mb-0" id="jobTitle">Đang tải...</p>
+            </div>
+            <a href="/recruiter/jobs" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+    </div>
+    
+    <div class="filter-section mb-3">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Xếp hạng CV:</strong> Danh sách CV đã nộp vào bài đăng này, được sắp xếp theo độ phù hợp từ cao xuống thấp.
+                    <button type="button" class="btn btn-sm btn-link p-0 ms-2" data-bs-toggle="collapse" data-bs-target="#criteriaInfo" aria-expanded="false">
+                        <i class="bi bi-question-circle"></i> Xem tiêu chí đánh giá
+                    </button>
+                </div>
+                <div class="collapse mt-2" id="criteriaInfo">
+                    <div class="card card-body bg-light">
+                        <h6 class="mb-2"><i class="bi bi-list-check me-2"></i>Tiêu chí đánh giá độ phù hợp:</h6>
+                        <ul class="mb-0 small">
+                            <li><strong>Kỹ năng (30%):</strong> CV có các kỹ năng cần thiết cho vị trí không?</li>
+                            <li><strong>Kinh nghiệm (30%):</strong> Kinh nghiệm làm việc có phù hợp với yêu cầu không?</li>
+                            <li><strong>Trình độ học vấn (15%):</strong> Trình độ học vấn có đáp ứng yêu cầu không?</li>
+                            <li><strong>Mô tả công việc (15%):</strong> CV có thể hiện hiểu biết về công việc không?</li>
+                            <li><strong>Yêu cầu đặc biệt (10%):</strong> Có đáp ứng các yêu cầu đặc biệt (ngoại ngữ, chứng chỉ, v.v.) không?</li>
+                        </ul>
+                        <p class="mb-0 mt-2 small text-muted">
+                            <i class="bi bi-robot me-1"></i>CV có badge "AI đánh giá" được đánh giá bằng AI. CV khác được đánh giá dựa trên confidence score và category match.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="topCVsContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const jobId = {{ job_id }};
+    
+    async function loadTopCVs() {
+        const container = document.getElementById('topCVsContainer');
+        const token = localStorage.getItem('access_token');
+        
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        
+        try {
+            const params = new URLSearchParams({
+                limit: 100  // Lấy tất cả CV đã nộp
+            });
+            
+            const response = await fetch(`/api/recruiter/jobs/${jobId}/top-cvs?${params.toString()}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update job title
+                document.getElementById('jobTitle').textContent = data.job_title || 'Đang tải...';
+                
+                if (data.top_cvs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h3>Chưa có CV phù hợp</h3>
+                            <p class="text-muted">Không tìm thấy CV nào phù hợp với bài đăng này</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = data.top_cvs.map((cv, index) => {
+                    const appliedClass = 'applied';  // Tất cả đều đã apply
+                    const aiBadge = cv.ai_evaluated ? '<span class="badge bg-info ms-2"><i class="bi bi-robot me-1"></i>AI đánh giá</span>' : '';
+                    
+                    return `
+                        <div class="cv-card ${appliedClass}">
+                            <div class="cv-header">
+                                <div>
+                                    <div class="cv-name">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>${cv.file_name}
+                                    </div>
+                                    <div class="cv-meta mt-2">
+                                        <span><i class="bi bi-tag"></i>${cv.category || 'Chưa phân loại'}</span>
+                                        <span><i class="bi bi-calendar"></i>${new Date(cv.uploaded_at).toLocaleDateString('vi-VN')}</span>
+                                        <span class="applied-badge"><i class="bi bi-check-circle me-1"></i>Đã ứng tuyển</span>
+                                        ${aiBadge}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div>
+                                        <span class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                            <i class="bi bi-trophy me-1"></i>#${index + 1}
+                                        </span>
+                                    </div>
+                                    ${cv.ai_evaluated ? '<div class="mt-1"><small class="text-muted"><i class="bi bi-robot"></i> Đánh giá bằng AI</small></div>' : '<div class="mt-1"><small class="text-muted"><i class="bi bi-calculator"></i> Đánh giá tự động</small></div>'}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="viewCV(${cv.cv_id})">
+                                    <i class="bi bi-eye me-1"></i>Xem CV
+                                </button>
+                                <a href="/recruiter/applications?job_id=${jobId}" class="btn btn-sm btn-success">
+                                    <i class="bi bi-person-check me-1"></i>Xem đơn ứng tuyển
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Lỗi khi tải danh sách CV'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading top CVs:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải danh sách CV
+                </div>
+            `;
+        }
+    }
+    
+    async function viewCV(cvId) {
+        const token = localStorage.getItem('access_token');
+        
+        // Mở trực tiếp file PDF trong tab mới
+        const downloadUrl = `/api/cvs/${cvId}/download`;
+        
+        try {
+            const response = await fetch(downloadUrl, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const pdfWindow = window.open(blobUrl, '_blank');
+                
+                if (pdfWindow) {
+                    pdfWindow.addEventListener('load', () => {
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+                    });
+                } else {
+                    const link = document.createElement('a');
+                    link.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'CV.pdf';
+                    link.href = blobUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+                }
+            } else {
+                const errorData = await response.json();
+                if (typeof Toast !== 'undefined') {
+                    Toast.error(`Lỗi: ${errorData.message || 'Không thể mở CV'}`);
+                } else {
+                    alert(`Lỗi: ${errorData.message || 'Không thể mở CV'}`);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading CV:', error);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Có lỗi xảy ra khi mở CV. Vui lòng thử lại.');
+            } else {
+                alert('Có lỗi xảy ra khi mở CV. Vui lòng thử lại.');
+            }
+        }
+    }
+    
+    // Load on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTopCVs();
+        // Initialize Bootstrap tooltips after content loads
+        setTimeout(() => {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }, 500);
+    });
+</script>
+{% endblock %}
+

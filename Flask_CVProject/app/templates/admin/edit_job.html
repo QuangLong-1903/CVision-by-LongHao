@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa bài đăng tuyển dụng - Admin - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2 class="mb-4"><i class="bi bi-pencil me-2"></i>Chỉnh sửa bài đăng tuyển dụng</h2>
+        
+        <div id="loadingMessage" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Đang tải thông tin bài đăng...</p>
+        </div>
+        
+        <form id="jobForm" style="display: none;">
+            <div class="mb-3">
+                <label for="recruiter_id" class="form-label">Nhà tuyển dụng <span class="text-danger">*</span></label>
+                <select class="form-select" id="recruiter_id" required>
+                    <option value="">-- Chọn nhà tuyển dụng --</option>
+                </select>
+                <small class="text-muted">Admin có thể thay đổi nhà tuyển dụng của bài đăng</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Mô tả công việc</label>
+                <textarea class="form-control" id="description" rows="5"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="requirements" class="form-label">Yêu cầu</label>
+                <textarea class="form-control" id="requirements" rows="5"></textarea>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="location" class="form-label">Địa điểm</label>
+                    <input type="text" class="form-control" id="location">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="category_id" class="form-label">Ngành nghề</label>
+                    <select class="form-select" id="category_id">
+                        <option value="">-- Chọn ngành nghề --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="salary_min" class="form-label">Lương tối thiểu (VNĐ)</label>
+                    <input type="number" class="form-control" id="salary_min" min="0">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="salary_max" class="form-label">Lương tối đa (VNĐ)</label>
+                    <input type="number" class="form-control" id="salary_max" min="0">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="employment_type" class="form-label">Loại hình làm việc</label>
+                    <select class="form-select" id="employment_type">
+                        <option value="">-- Chọn loại hình --</option>
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="contract">Hợp đồng</option>
+                        <option value="internship">Thực tập</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="deadline" class="form-label">Hạn nộp hồ sơ</label>
+                    <input type="datetime-local" class="form-control" id="deadline">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="company_logo" class="form-label">Logo công ty</label>
+                <input type="file" class="form-control" id="company_logo" accept="image/*">
+                <small class="text-muted">Chấp nhận: JPG, PNG, GIF, WEBP, SVG (tối đa 5MB)</small>
+                <div id="logoPreview" class="mt-2">
+                    <div id="currentLogo" style="display: none;">
+                        <p class="text-muted mb-1">Logo hiện tại:</p>
+                        <img id="currentLogoImg" src="" alt="Current logo" style="max-width: 200px; max-height: 100px; border-radius: 8px;">
+                    </div>
+                    <div id="newLogoPreview" style="display: none;">
+                        <p class="text-muted mb-1">Logo mới:</p>
+                        <img id="newLogoPreviewImg" src="" alt="New logo preview" style="max-width: 200px; max-height: 100px; border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="is_active">
+                <label class="form-check-label" for="is_active">
+                    Kích hoạt bài đăng
+                </label>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>Cập nhật bài đăng
+                </button>
+                <a href="/admin/jobs" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+        
+        <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const jobId = {{ job_id }};
+    
+    async function loadRecruiters() {
+        const token = localStorage.getItem('access_token');
+        try {
+            const response = await fetch('/admin/api/recruiters', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                const select = document.getElementById('recruiter_id');
+                data.recruiters.forEach(recruiter => {
+                    const option = document.createElement('option');
+                    option.value = recruiter.id;
+                    option.textContent = `${recruiter.full_name || recruiter.email} (${recruiter.email})`;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading recruiters:', error);
+        }
+    }
+    
+    async function loadCategories() {
+        const token = localStorage.getItem('access_token');
+        try {
+            const response = await fetch('/api/categories', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                const select = document.getElementById('category_id');
+                data.categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    }
+    
+    async function loadJobData() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/admin/api/jobs/${jobId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const job = data.job;
+                
+                // Điền dữ liệu vào form
+                document.getElementById('recruiter_id').value = job.recruiter_id || '';
+                document.getElementById('title').value = job.title || '';
+                document.getElementById('description').value = job.description || '';
+                document.getElementById('requirements').value = job.requirements || '';
+                document.getElementById('location').value = job.location || '';
+                document.getElementById('category_id').value = job.category_id || '';
+                document.getElementById('salary_min').value = job.salary_min || '';
+                document.getElementById('salary_max').value = job.salary_max || '';
+                document.getElementById('employment_type').value = job.employment_type || '';
+                document.getElementById('is_active').checked = job.is_active !== false;
+                
+                // Xử lý deadline
+                if (job.deadline) {
+                    const deadlineDate = new Date(job.deadline);
+                    const year = deadlineDate.getFullYear();
+                    const month = String(deadlineDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(deadlineDate.getDate()).padStart(2, '0');
+                    const hours = String(deadlineDate.getHours()).padStart(2, '0');
+                    const minutes = String(deadlineDate.getMinutes()).padStart(2, '0');
+                    document.getElementById('deadline').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                }
+                
+                // Hiển thị logo hiện tại nếu có
+                if (job.company_logo) {
+                    document.getElementById('currentLogoImg').src = job.company_logo;
+                    document.getElementById('currentLogo').style.display = 'block';
+                }
+                
+                // Hiển thị form
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('jobForm').style.display = 'block';
+            } else {
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('errorMessage').textContent = data.message || 'Không thể tải thông tin bài đăng';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').textContent = 'Có lỗi xảy ra khi tải thông tin bài đăng';
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+    }
+    
+    // Preview logo khi chọn file
+    document.getElementById('company_logo')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('newLogoPreviewImg').src = e.target.result;
+                document.getElementById('newLogoPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('newLogoPreview').style.display = 'none';
+        }
+    });
+    
+    document.getElementById('jobForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('recruiter_id', document.getElementById('recruiter_id').value);
+        formData.append('title', document.getElementById('title').value);
+        formData.append('description', document.getElementById('description').value);
+        formData.append('requirements', document.getElementById('requirements').value);
+        formData.append('location', document.getElementById('location').value);
+        formData.append('category_id', document.getElementById('category_id').value || '');
+        formData.append('salary_min', document.getElementById('salary_min').value || '');
+        formData.append('salary_max', document.getElementById('salary_max').value || '');
+        formData.append('employment_type', document.getElementById('employment_type').value || '');
+        
+        const deadlineInput = document.getElementById('deadline').value;
+        if (deadlineInput) {
+            formData.append('deadline', deadlineInput + ':00');
+        }
+        
+        formData.append('is_active', document.getElementById('is_active').checked);
+        
+        const logoFile = document.getElementById('company_logo').files[0];
+        if (logoFile) {
+            formData.append('company_logo', logoFile);
+        }
+        
+        try {
+            const response = await fetch(`/admin/api/jobs/${jobId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (typeof Toast !== 'undefined') {
+                    Toast.success('Cập nhật bài đăng thành công!');
+                } else {
+                    alert('Cập nhật bài đăng thành công!');
+                }
+                setTimeout(() => {
+                    window.location.href = `/admin/jobs/${jobId}`;
+                }, 1500);
+            } else {
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Lỗi: ' + (data.message || 'Không thể cập nhật bài đăng'));
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật bài đăng'));
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Có lỗi xảy ra khi cập nhật bài đăng');
+            } else {
+                alert('Có lỗi xảy ra khi cập nhật bài đăng');
+            }
+        }
+    });
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadRecruiters();
+        await loadCategories();
+        await loadJobData();
+    });
+</script>
+{% endblock %}
+

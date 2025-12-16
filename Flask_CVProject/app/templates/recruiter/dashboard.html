@@ -1,0 +1,732 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Nhà tuyển dụng - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .page-header h1 {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.4s ease;
+    }
+    
+    .stat-card.jobs::before { 
+        background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+    }
+    
+    .stat-card.applications::before { 
+        background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .stat-card.active::before { 
+        background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    }
+    
+    .stat-card.pending::before { 
+        background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .stat-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        transform: translateY(-6px);
+        border-color: #667eea;
+    }
+    
+    .stat-card.jobs:hover { border-color: #06b6d4; }
+    .stat-card.applications:hover { border-color: #f59e0b; }
+    .stat-card.active:hover { border-color: #10b981; }
+    .stat-card.pending:hover { border-color: #ef4444; }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card.jobs .stat-icon {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #06b6d4;
+    }
+    
+    .stat-card.applications .stat-icon {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #f59e0b;
+    }
+    
+    .stat-card.active .stat-icon {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #10b981;
+    }
+    
+    .stat-card.pending .stat-icon {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #ef4444;
+    }
+    
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card.jobs .stat-number {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.applications .stat-number {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.active .stat-number {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.pending .stat-number {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .stat-subtext {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .chart-title i {
+        color: var(--primary-color);
+        font-size: 1.3rem;
+    }
+    
+    .top-jobs-list {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .top-jobs-list:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    .job-item {
+        padding: 1.25rem;
+        border-bottom: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-item:hover {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        transform: translateX(5px);
+        border-left: 4px solid var(--primary-color);
+        padding-left: calc(1.25rem - 4px);
+    }
+    
+    .job-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .job-item a {
+        color: var(--dark-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .job-item:hover a {
+        color: var(--primary-color);
+    }
+    
+    .job-item .badge {
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        font-weight: 600;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+        }
+        
+        .chart-container, .top-jobs-list {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+                <p class="text-muted mb-0">Tổng quan về hoạt động tuyển dụng của bạn</p>
+            </div>
+            <div>
+                <a href="/recruiter/jobs" class="btn btn-primary" style="border-radius: 12px; font-weight: 600; padding: 0.75rem 1.5rem;">
+                    <i class="bi bi-briefcase me-2"></i>Quản lý bài đăng
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div id="statsContainer" class="row g-4 mb-4">
+        <div class="col-md-3">
+                <div class="stat-card jobs">
+                <div class="stat-icon">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <div class="stat-number" id="totalJobs">-</div>
+                <div class="stat-label">Tổng số bài đăng</div>
+                <div class="stat-subtext">
+                    <span id="activeJobs">-</span> đang hoạt động | 
+                    <span id="inactiveJobs">-</span> đã tắt
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card applications">
+                <div class="stat-icon">
+                    <i class="bi bi-file-earmark-person"></i>
+                </div>
+                <div class="stat-number" id="totalApplications">-</div>
+                <div class="stat-label">Tổng số CV ứng tuyển</div>
+                <div class="stat-subtext">
+                    <span id="applicationsLast7Days">-</span> trong 7 ngày qua
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card active">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-number" id="shortlistedCount">-</div>
+                <div class="stat-label">Đã chọn</div>
+                <div class="stat-subtext">
+                    <span id="hiredCount">-</span> đã tuyển
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-number" id="pendingCount">-</div>
+                <div class="stat-label">Chờ xem xét</div>
+                <div class="stat-subtext">
+                    <span id="rejectedCount">-</span> đã từ chối
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="bi bi-bar-chart me-2"></i>Xu hướng 30 ngày qua
+                </h3>
+                <canvas id="trendsChart" height="80"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="bi bi-pie-chart me-2"></i>CV theo trạng thái
+                </h3>
+                <canvas id="statusChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="bi bi-tags me-2"></i>CV theo ngành nghề
+                </h3>
+                <canvas id="categoryChart" height="80"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="top-jobs-list">
+                <h3 class="chart-title">
+                    <i class="bi bi-trophy me-2"></i>Top bài đăng có nhiều ứng viên nhất
+                </h3>
+                <div id="topJobsList">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    let trendsChart = null;
+    let statusChart = null;
+    let categoryChart = null;
+    
+    async function loadStatistics() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/recruiter/statistics', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const stats = data.statistics;
+                
+                // Update stat cards
+                document.getElementById('totalJobs').textContent = stats.jobs.total;
+                document.getElementById('activeJobs').textContent = stats.jobs.active;
+                document.getElementById('inactiveJobs').textContent = stats.jobs.inactive;
+                
+                document.getElementById('totalApplications').textContent = stats.applications.total;
+                document.getElementById('applicationsLast7Days').textContent = stats.applications.last_7_days;
+                
+                document.getElementById('shortlistedCount').textContent = stats.applications.by_status.shortlisted || 0;
+                document.getElementById('hiredCount').textContent = stats.applications.by_status.hired || 0;
+                
+                document.getElementById('pendingCount').textContent = stats.applications.by_status.pending || 0;
+                document.getElementById('rejectedCount').textContent = stats.applications.by_status.rejected || 0;
+                
+                // Update charts
+                updateTrendsChart(stats.trends);
+                updateStatusChart(stats.applications.by_status);
+                updateCategoryChart(stats.cv_by_category);
+                updateTopJobs(stats.top_jobs);
+            } else {
+                console.error('Error loading statistics:', data.message);
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Lỗi: ' + (data.message || 'Không thể tải thống kê'));
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể tải thống kê'));
+                }
+            }
+        } catch (error) {
+            console.error('Error loading statistics:', error);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Có lỗi xảy ra khi tải thống kê');
+            } else {
+                alert('Có lỗi xảy ra khi tải thống kê');
+            }
+        }
+    }
+    
+    function updateTrendsChart(trends) {
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+        
+        const labels = trends.jobs.map(stat => {
+            const date = new Date(stat.date);
+            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+        });
+        
+        const jobsData = trends.jobs.map(stat => stat.count);
+        const applicationsData = trends.applications.map(stat => stat.count);
+        
+        if (trendsChart) {
+            trendsChart.destroy();
+        }
+        
+        trendsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Bài đăng mới',
+                        data: jobsData,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#06b6d4',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    },
+                    {
+                        label: 'CV ứng tuyển',
+                        data: applicationsData,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#f59e0b',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 13,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateStatusChart(statusData) {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        
+        const labels = ['Chờ xem xét', 'Đã xem', 'Đã chọn', 'Đã từ chối', 'Đã tuyển'];
+        const data = [
+            statusData.pending || 0,
+            statusData.reviewed || 0,
+            statusData.shortlisted || 0,
+            statusData.rejected || 0,
+            statusData.hired || 0
+        ];
+        
+        const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+        
+        if (statusChart) {
+            statusChart.destroy();
+        }
+        
+        statusChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        cornerRadius: 8
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateCategoryChart(categoryData) {
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        
+        if (categoryData.length === 0) {
+            document.getElementById('categoryChart').parentElement.innerHTML = `
+                <div class="text-center py-5">
+                    <p class="text-muted">Chưa có dữ liệu CV theo ngành nghề</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const labels = categoryData.map(cat => cat.name);
+        const data = categoryData.map(cat => cat.count);
+        
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+        
+        categoryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng CV',
+                    data: data,
+                    backgroundColor: 'rgba(6, 182, 212, 0.8)',
+                    borderColor: '#06b6d4',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateTopJobs(topJobs) {
+        const container = document.getElementById('topJobsList');
+        
+        if (topJobs.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center py-3">Chưa có bài đăng nào</p>';
+            return;
+        }
+        
+        container.innerHTML = topJobs.map((job, index) => `
+            <div class="job-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 0.75rem; border-radius: 10px;">
+                                <i class="bi bi-trophy me-1"></i>#${index + 1}
+                            </span>
+                            <a href="/recruiter/jobs/${job.id}" class="text-decoration-none fw-bold" style="font-size: 1.05rem;">
+                                ${job.title}
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <small class="text-muted">
+                                <i class="bi bi-people me-1"></i><strong>${job.count}</strong> ứng viên
+                            </small>
+                            <a href="/recruiter/jobs/${job.id}" class="btn btn-sm btn-outline-primary" style="border-radius: 8px; padding: 0.25rem 0.75rem;">
+                                <i class="bi bi-eye me-1"></i>Xem
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadStatistics);
+</script>
+{% endblock %}
+

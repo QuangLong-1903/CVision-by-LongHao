@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - {{ full_name or 'Curriculum Vitae' }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .cv-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .cv-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .cv-header .avatar-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .cv-header .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .cv-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        
+        .cv-header .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .cv-header .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cv-body {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 35px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+        
+        .summary {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            line-height: 1.8;
+            color: #4a5568;
+        }
+        
+        .experience-item, .education-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        
+        .experience-item:hover, .education-item:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .item-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .item-company, .item-school {
+            font-size: 16px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .item-date {
+            background: #edf2f7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4a5568;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .item-description {
+            margin-top: 12px;
+            color: #4a5568;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .skill-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .certification-item, .project-item {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        .cert-name, .project-name {
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .cert-org, .project-url {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .project-url a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .project-url a:hover {
+            text-decoration: underline;
+        }
+        
+        .language-item {
+            display: inline-block;
+            background: #edf2f7;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .language-name {
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .language-level {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .cv-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .experience-item:hover, .education-item:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <!-- Header -->
+        <div class="cv-header">
+            {% if avatar_url %}
+            <div class="avatar-container">
+                <img src="{{ avatar_url }}" alt="Avatar">
+            </div>
+            {% endif %}
+            <h1>{{ full_name or 'Your Name' }}</h1>
+            <div class="contact-info">
+                {% if email %}
+                <div class="contact-item">
+                    <span>📧</span>
+                    <span>{{ email }}</span>
+                </div>
+                {% endif %}
+                {% if phone %}
+                <div class="contact-item">
+                    <span>📱</span>
+                    <span>{{ phone }}</span>
+                </div>
+                {% endif %}
+                {% if address %}
+                <div class="contact-item">
+                    <span>📍</span>
+                    <span>{{ address }}</span>
+                </div>
+                {% endif %}
+                {% if linkedin %}
+                <div class="contact-item">
+                    <span>💼</span>
+                    <span>{{ linkedin }}</span>
+                </div>
+                {% endif %}
+                {% if website %}
+                <div class="contact-item">
+                    <span>🌐</span>
+                    <span>{{ website }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="cv-body">
+            <!-- Summary -->
+            {% if summary and summary.strip() %}
+            <div class="section">
+                <h2 class="section-title">Tóm tắt</h2>
+                <div class="summary">{{ summary }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Experience -->
+            {% if experiences and experiences|length > 0 %}
+            <div class="section">
+                <h2 class="section-title">Kinh nghiệm làm việc</h2>
+                {% for exp in experiences %}
+                <div class="experience-item">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">{{ exp.position or exp.get('position', '') }}</div>
+                            <div class="item-company">{{ exp.company or exp.get('company', '') }}</div>
+                        </div>
+                        <div class="item-date">
+                            {% if exp.start_date or exp.get('start_date') %}
+                                {{ exp.start_date or exp.get('start_date', '') }}
+                                {% if exp.end_date or exp.get('end_date') %}
+                                    - {{ exp.end_date or exp.get('end_date', '') }}
+                                {% elif exp.is_current or exp.get('is_current') %}
+                                    - Hiện tại
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if exp.description or exp.get('description') %}
+                    <div class="item-description">{{ exp.description or exp.get('description', '') }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Education -->
+            {% if education and education|length > 0 %}
+            <div class="section">
+                <h2 class="section-title">Học vấn</h2>
+                {% for edu in education %}
+                <div class="education-item">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">{{ edu.school or edu.get('school', '') }}</div>
+                            <div class="item-company">{{ edu.major or edu.get('major', '') }} - {{ edu.degree or edu.get('degree', '') }}</div>
+                        </div>
+                        <div class="item-date">{{ edu.year or edu.get('year', '') }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Skills -->
+            {% if skills and skills|length > 0 %}
+            <div class="section">
+                <h2 class="section-title">Kỹ năng</h2>
+                <div class="skills-list">
+                    {% for skill in skills %}
+                    <span class="skill-badge">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Certifications -->
+            {% if certifications and certifications|length > 0 %}
+            <div class="section">
+                <h2 class="section-title">Chứng chỉ</h2>
+                {% for cert in certifications %}
+                <div class="certification-item">
+                    <div class="cert-name">{{ cert.name or cert.get('name', '') }}</div>
+                    <div class="cert-org">{{ cert.organization or cert.get('organization', '') }} 
+                        {% if cert.date or cert.get('date') %} - {{ cert.date or cert.get('date', '') }}{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Projects -->
+            {% if projects and projects|length > 0 %}
+            <div class="section">
+                <h2 class="section-title">Dự án</h2>
+                {% for proj in projects %}
+                <div class="project-item">
+                    <div class="project-name">{{ proj.name or proj.get('name', '') }}</div>
+                    {% if proj.url or proj.get('url') %}
+                    <div class="project-url">
+                        <a href="{{ proj.url or proj.get('url', '') }}" target="_blank">{{ proj.url or proj.get('url', '') }}</a>
+                    </div>
+                    {% endif %}
+                    {% if proj.description or proj.get('description') %}
+                    <div class="item-description">{{ proj.description or proj.get('description', '') }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Languages -->
+            {% if languages and languages|length > 0 %}
+            <div class="section">
+                <h2 class="section-title">Ngôn ngữ</h2>
+                <div>
+                    {% for lang in languages %}
+                    <div class="language-item">
+                        <span class="language-name">{{ lang.name or lang.get('name', '') }}</span>
+                        <span class="language-level"> - {{ lang.level or lang.get('level', '') }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,564 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-wrapper {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-header h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dashboard-header p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card-title {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stat-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+    }
+    
+    .stat-card-icon.total {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .stat-card-icon.confidence {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .stat-card-icon.categories {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .stat-card-icon.trends {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+    
+    .stat-card-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-card-label {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .chart-card-header {
+        margin-bottom: 1rem;
+    }
+    
+    .chart-card-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+    
+    .chart-card-subtitle {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .loading-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+    
+    .loading-spinner {
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <div class="dashboard-header">
+        <h2>Dashboard</h2>
+        <p>Overview of your CVs and statistics</p>
+    </div>
+    
+    <div id="alertBox" class="alert d-none" role="alert"></div>
+
+    <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading statistics...</p>
+    </div>
+
+    <div id="statsCards" class="stats-grid d-none">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">Total CVs</div>
+                <div class="stat-card-icon total">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+            </div>
+            <div class="stat-card-value" id="totalCvs">0</div>
+            <div class="stat-card-label">CVs uploaded</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">Average Confidence</div>
+                <div class="stat-card-icon confidence">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+            <div class="stat-card-value" id="averageConfidence">0%</div>
+            <div class="stat-card-label">Classification accuracy</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">Categories</div>
+                <div class="stat-card-icon categories">
+                    <i class="bi bi-tags"></i>
+                </div>
+            </div>
+            <div class="stat-card-value" id="totalCategories">0</div>
+            <div class="stat-card-label">Unique categories</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">Last 30 Days</div>
+                <div class="stat-card-icon trends">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
+            </div>
+            <div class="stat-card-value" id="recentUploads">0</div>
+            <div class="stat-card-label">CVs uploaded</div>
+        </div>
+    </div>
+
+    <div id="chartsSection" class="d-none">
+        <div class="charts-grid">
+            
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div class="chart-card-title">CVs by Category</div>
+                    <div class="chart-card-subtitle">Distribution of CVs across job categories</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div class="chart-card-title">CVs by File Type</div>
+                    <div class="chart-card-subtitle">Distribution by file format</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="fileTypeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card" style="grid-column: 1 / -1;">
+                <div class="chart-card-header">
+                    <div class="chart-card-title">Upload Trends (Last 30 Days)</div>
+                    <div class="chart-card-subtitle">Daily upload activity</div>
+                </div>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card" style="margin-top: 1.5rem;">
+            <div class="chart-card-header">
+                <div class="chart-card-title">Most Common Categories</div>
+                <div class="chart-card-subtitle">Top 5 categories by count</div>
+            </div>
+            <div id="commonCategoriesList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyState" class="empty-state d-none">
+        <i class="bi bi-bar-chart"></i>
+        <h3>No statistics yet</h3>
+        <p>You haven't uploaded any CVs. Start by uploading your first CV!</p>
+        <a href="/" class="btn btn-primary">
+            <i class="bi bi-cloud-upload me-1"></i> Upload CV
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    let categoryChart = null;
+    let fileTypeChart = null;
+    let trendsChart = null;
+    
+    function showAlert(type, message) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = `alert alert-${type}`;
+        alertBox.textContent = message;
+        alertBox.classList.remove('d-none');
+        setTimeout(() => alertBox.classList.add('d-none'), 5000);
+    }
+    
+    async function loadStatistics() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        try {
+            const res = await fetch('/api/statistics', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!res.ok) {
+                if (res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                throw new Error(`Failed to load statistics (${res.status})`);
+            }
+            
+            const data = await res.json();
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to load statistics');
+            }
+
+            document.getElementById('loadingState').classList.add('d-none');
+            
+            const stats = data.statistics;
+            
+            if (stats.total_cvs === 0) {
+                document.getElementById('emptyState').classList.remove('d-none');
+                return;
+            }
+
+            document.getElementById('statsCards').classList.remove('d-none');
+            document.getElementById('chartsSection').classList.remove('d-none');
+
+            document.getElementById('totalCvs').textContent = stats.total_cvs;
+            document.getElementById('averageConfidence').textContent = stats.average_confidence.toFixed(1) + '%';
+            document.getElementById('totalCategories').textContent = stats.cvs_by_category.length;
+            document.getElementById('recentUploads').textContent = stats.upload_trends.reduce((sum, item) => sum + item.count, 0);
+
+            createCategoryChart(stats.cvs_by_category);
+            createFileTypeChart(stats.cvs_by_file_type);
+            createTrendsChart(stats.upload_trends);
+
+            updateCommonCategories(stats.most_common_categories);
+            
+        } catch (error) {
+            console.error('Error loading statistics:', error);
+            document.getElementById('loadingState').classList.add('d-none');
+            showAlert('danger', error.message || 'Failed to load statistics. Please try again.');
+        }
+    }
+    
+    function createCategoryChart(data) {
+        const ctx = document.getElementById('categoryChart');
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+        
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.map(item => item.name),
+                datasets: [{
+                    data: data.map(item => item.count),
+                    backgroundColor: [
+                        '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                        '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+                        '#fa709a', '#fee140'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function createFileTypeChart(data) {
+        const ctx = document.getElementById('fileTypeChart');
+        if (fileTypeChart) {
+            fileTypeChart.destroy();
+        }
+        
+        fileTypeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(item => item.type),
+                datasets: [{
+                    label: 'CVs',
+                    data: data.map(item => item.count),
+                    backgroundColor: '#667eea',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y} CV${context.parsed.y !== 1 ? 's' : ''}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function createTrendsChart(data) {
+        const ctx = document.getElementById('trendsChart');
+        if (trendsChart) {
+            trendsChart.destroy();
+        }
+
+        const labels = data.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        
+        trendsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'CVs Uploaded',
+                    data: data.map(item => item.count),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y} CV${context.parsed.y !== 1 ? 's' : ''}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateCommonCategories(categories) {
+        const container = document.getElementById('commonCategoriesList');
+        container.innerHTML = '';
+        
+        if (categories.length === 0) {
+            container.innerHTML = '<p class="text-muted">No categories yet</p>';
+            return;
+        }
+        
+        categories.forEach((cat, index) => {
+            const div = document.createElement('div');
+            div.className = 'p-3 border rounded';
+            div.style.cssText = 'border-color: #e2e8f0; background: #f8fafc;';
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: #0f172a; margin-bottom: 0.25rem;">
+                            ${cat.name}
+                        </div>
+                        <div style="font-size: 0.875rem; color: #64748b;">
+                            ${cat.count} CV${cat.count !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #667eea;">
+                        #${index + 1}
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStatistics);
+</script>
+{% endblock %}
+

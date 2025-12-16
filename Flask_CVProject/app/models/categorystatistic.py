@@ -1,4 +1,4 @@
-from app import db
+from app.extensions import db
 from datetime import datetime
 class CategoryStatistic(db.Model):
     __tablename__ = "category_statistics"

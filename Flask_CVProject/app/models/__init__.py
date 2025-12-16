@@ -7,3 +7,6 @@ from .categorystatistic import CategoryStatistic
 from .mlmodel import MLModel
 from .useractivitylog import UserActivityLog
 from .systemlog import SystemLog
+from .jobposting import JobPosting
+from .jobapplication import JobApplication
+from .cvdata import CVData

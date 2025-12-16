@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết việc làm - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-detail-header {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    
+    .job-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+    }
+    
+    .job-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        color: #64748b;
+    }
+    
+    .job-meta i {
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+    }
+    
+    .job-content {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .section-content {
+        color: #475569;
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+    
+    .apply-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 100px;
+    }
+    
+    .salary-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="jobDetailContainer">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const jobId = "{{ job_id }}";
+    
+    async function loadJobDetail(forceRefresh = false) {
+        const container = document.getElementById('jobDetailContainer');
+        const token = localStorage.getItem('access_token');
+        
+        try {
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            // Thêm cache-busting để đảm bảo luôn lấy dữ liệu mới nhất
+            const cacheBuster = forceRefresh ? `?t=${Date.now()}` : `?t=${Date.now()}`;
+            const response = await fetch(`/api/jobs/${jobId}${cacheBuster}`, { 
+                headers,
+                cache: 'no-cache' // Đảm bảo không cache response
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                // Check if user has applied (if logged in)
+                if (token && !data.job.has_applied) {
+                    try {
+                        const checkResponse = await fetch(`/api/jobs/${jobId}/check-application`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const checkData = await checkResponse.json();
+                        if (checkData.success && checkData.has_applied) {
+                            data.job.has_applied = true;
+                        }
+                    } catch (e) {
+                        // Ignore error
+                    }
+                }
+                displayJobDetail(data.job);
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Không tìm thấy việc làm này'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải chi tiết việc làm
+                </div>
+            `;
+        }
+    }
+    
+    function displayJobDetail(job) {
+        const container = document.getElementById('jobDetailContainer');
+        
+        const salaryText = job.salary_min && job.salary_max 
+            ? `${formatSalary(job.salary_min)} - ${formatSalary(job.salary_max)} VNĐ`
+            : job.salary_min 
+                ? `Từ ${formatSalary(job.salary_min)} VNĐ`
+                : 'Thỏa thuận';
+        
+        const applyButton = job.has_applied 
+            ? '<button class="btn btn-success w-100" disabled><i class="bi bi-check-circle me-2"></i>Đã ứng tuyển</button>'
+            : '<button class="btn btn-primary w-100" onclick="applyJob()"><i class="bi bi-send me-2"></i>Ứng tuyển ngay</button>';
+        
+        container.innerHTML = `
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="job-detail-header">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                ${job.company_logo ? `<div class="mb-3"><img src="${job.company_logo}" alt="Company logo" style="max-width: 120px; max-height: 120px; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>` : ''}
+                                <h1 class="job-title mb-0">${job.title}</h1>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshJobDetail()" title="Làm mới">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                        <div class="job-meta">
+                            <span><i class="bi bi-geo-alt"></i>${job.location || 'Chưa cập nhật'}</span>
+                            <span><i class="bi bi-tag"></i>${job.category || 'Chưa phân loại'}</span>
+                            <span><i class="bi bi-briefcase"></i>${job.employment_type || 'Full-time'}</span>
+                            <span><i class="bi bi-people"></i>${job.application_count} ứng viên</span>
+                            <span><i class="bi bi-calendar"></i>${formatDate(job.created_at)}</span>
+                        </div>
+                        ${job.deadline ? `<div class="alert alert-info"><i class="bi bi-clock me-2"></i>Hạn nộp hồ sơ: ${formatDeadline(job.deadline)}</div>` : ''}
+                    </div>
+                    
+                    <div class="job-content">
+                        <h2 class="section-title">Mô tả công việc</h2>
+                        <div class="section-content">${job.description || 'Chưa có mô tả'}</div>
+                    </div>
+                    
+                    ${job.requirements ? `
+                    <div class="job-content">
+                        <h2 class="section-title">Yêu cầu</h2>
+                        <div class="section-content">${job.requirements}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="apply-section">
+                        <div class="salary-display">${salaryText}</div>
+                        <p class="text-muted mb-3">Đăng bởi: <strong>${job.recruiter_name}</strong></p>
+                        ${applyButton}
+                        <div id="applyMessage" class="mt-3" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function showApplyModal() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('Vui lòng đăng nhập để ứng tuyển');
+            } else {
+                alert('Vui lòng đăng nhập để ứng tuyển');
+            }
+            window.location.href = '/login';
+            return;
+        }
+        
+        // Create modal HTML
+        const modalHTML = `
+            <div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="applyModalLabel">
+                                <i class="bi bi-send me-2"></i>Ứng tuyển
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Upload CV từ máy tính:</label>
+                                <input type="file" class="form-control" id="cvFile" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
+                                <small class="text-muted">Hỗ trợ: PDF, DOCX, TXT, JPG, PNG (tối đa 10MB)</small>
+                            </div>
+                            
+                            <div id="applyError" class="alert alert-danger mt-3" style="display: none;"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn btn-primary" onclick="submitApplication()">
+                                <i class="bi bi-send me-2"></i>Gửi đơn ứng tuyển
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('applyModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Initialize modal
+        const modal = new bootstrap.Modal(document.getElementById('applyModal'));
+        modal.show();
+        
+        // Clean up when modal is closed
+        document.getElementById('applyModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+    
+    async function submitApplication() {
+        const token = localStorage.getItem('access_token');
+        const errorDiv = document.getElementById('applyError');
+        errorDiv.style.display = 'none';
+        
+        let cvId = null;
+        
+        try {
+            // Upload new CV
+            const fileInput = document.getElementById('cvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                errorDiv.textContent = 'Vui lòng chọn file CV';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Check file type
+            const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
+            const fileName = file.name.toLowerCase();
+            const isValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+            
+            if (!isValidExtension) {
+                errorDiv.textContent = 'Định dạng file không được hỗ trợ. Chỉ hỗ trợ: PDF, DOCX, TXT, JPG, JPEG, PNG';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Check file size (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                errorDiv.textContent = 'File quá lớn. Vui lòng chọn file nhỏ hơn 10MB';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Upload CV
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const uploadResponse = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            
+            const uploadData = await uploadResponse.json();
+            
+            if (!uploadData.success) {
+                errorDiv.textContent = uploadData.message || 'Lỗi khi upload CV';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            cvId = uploadData.cv.id;
+            
+            // Apply for job
+            const applyResponse = await fetch(`/api/jobs/${jobId}/apply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ cv_id: cvId })
+            });
+            
+            const applyData = await applyResponse.json();
+            
+            if (applyData.success) {
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('applyModal'));
+                modal.hide();
+                
+                // Show success message
+                document.getElementById('applyMessage').innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>${applyData.message}
+                    </div>
+                `;
+                document.getElementById('applyMessage').style.display = 'block';
+                
+                // Reload job detail to update status
+                setTimeout(() => {
+                    loadJobDetail();
+                }, 1000);
+            } else {
+                errorDiv.textContent = applyData.message || 'Lỗi khi ứng tuyển';
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error applying:', error);
+            errorDiv.textContent = 'Có lỗi xảy ra khi ứng tuyển. Vui lòng thử lại.';
+            errorDiv.style.display = 'block';
+        }
+    }
+    
+    async function applyJob() {
+        showApplyModal();
+    }
+    
+    function formatSalary(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount);
+    }
+    
+    function formatDate(dateString) {
+        // Format date để hiển thị đúng ngày (không bị ảnh hưởng bởi timezone)
+        if (!dateString) return '';
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        } catch (e) {
+            console.error('Error formatting date:', e);
+            return dateString;
+        }
+    }
+    
+    function formatDeadline(deadlineString) {
+        if (!deadlineString) return '';
+        
+        try {
+            let date;
+            if (deadlineString.includes('T')) {
+                const [datePart] = deadlineString.split('T');
+                const [year, month, day] = datePart.split('-').map(Number);
+                date = new Date(Date.UTC(year, month - 1, day));
+            } else {
+                date = new Date(deadlineString);
+            }
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        } catch (e) {
+            console.error('Error formatting deadline:', e);
+            return deadlineString;
+        }
+    }
+    function refreshJobDetail() {
+        const container = document.getElementById('jobDetailContainer');
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        loadJobDetail(true);
+    }
+    let lastLoadTime = Date.now();
+    window.addEventListener('focus', function() {
+        if (Date.now() - lastLoadTime > 30000) {
+            refreshJobDetail();
+        }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        loadJobDetail();
+        lastLoadTime = Date.now();
+    });
+</script>
+{% endblock %}
+

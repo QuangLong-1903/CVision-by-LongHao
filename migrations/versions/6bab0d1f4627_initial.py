@@ -1,8 +1,8 @@
-"""Check after cleanup
+"""initial
 
-Revision ID: a2428cdd02bb
+Revision ID: 6bab0d1f4627
 Revises: 
-Create Date: 2025-10-11 10:49:28.043401
+Create Date: 2025-10-25 12:24:54.496193
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a2428cdd02bb'
+revision = '6bab0d1f4627'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -65,7 +65,7 @@ def upgrade():
     )
     op.create_table('cvs',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('file_name', sa.String(length=255), nullable=False),
     sa.Column('file_type', sa.String(length=50), nullable=True),
     sa.Column('file_size', sa.Integer(), nullable=True),
@@ -103,7 +103,7 @@ def upgrade():
     )
     op.create_table('cv_processing_queue',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('cv_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['cv_id'], ['cvs.id'], ),

@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+
+{% block title %}CV Details - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cv-detail-wrapper {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    
+    .cv-detail-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .cv-detail-header h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cv-detail-header p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+    
+    .btn-back {
+        padding: 0.75rem 1.5rem;
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+    
+    .card-detail {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-detail .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: #fff;
+        border-radius: 16px 16px 0 0;
+    }
+    
+    .card-detail .card-header h5 {
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0;
+    }
+    
+    .card-detail .card-body {
+        padding: 1.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #64748b;
+        width: 150px;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        color: #0f172a;
+        flex: 1;
+    }
+    
+    .file-icon-large {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+    
+    .file-icon-large.pdf {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .file-icon-large.docx {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+    
+    .file-icon-large.txt {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+    
+    .category-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #f0f4ff;
+        color: #4f46e5;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .category-badge.none {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    
+    .text-content {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        max-height: 500px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: #475569;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .text-content.empty {
+        color: #94a3b8;
+        font-style: italic;
+        text-align: center;
+    }
+    
+    .classification-history {
+        margin-top: 1rem;
+    }
+    
+    .log-item {
+        padding: 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+    }
+    
+    .log-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .log-date {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    .confidence-score {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #dcfce7;
+        color: #166534;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .loading-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #64748b;
+    }
+    
+    .loading-spinner {
+        border: 3px solid #f1f5f9;
+        border-top: 3px solid #4f46e5;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .alert {
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-action.primary {
+        background: #4f46e5;
+        color: white;
+    }
+    
+    .btn-action.primary:hover {
+        background: #4338ca;
+    }
+    
+    .btn-action.secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+    
+    .btn-action.secondary:hover {
+        background: #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cv-detail-wrapper">
+    <div class="cv-detail-header">
+        <div>
+            <h2>CV Details</h2>
+            <p>View CV information and extracted text</p>
+        </div>
+        <a href="/create-cv" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Back to Create CV
+        </a>
+    </div>
+    
+    <div id="alertBox" class="alert d-none" role="alert"></div>
+    
+    <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading CV details...</p>
+    </div>
+    
+    <div id="cvDetailContent" style="display: none;">
+        <!-- File Information Card -->
+        <div class="card-detail">
+            <div class="card-header">
+                <h5>File Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <div class="info-label">File</div>
+                    <div class="info-value" id="fileInfo">
+                        <!-- Will be populated by JS -->
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Size</div>
+                    <div class="info-value" id="fileSize">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Type</div>
+                    <div class="info-value" id="fileType">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Uploaded</div>
+                    <div class="info-value" id="uploadedAt">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Category</div>
+                    <div class="info-value" id="category">-</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-action secondary" id="btnDownload" onclick="downloadCV()">
+                        <i class="bi bi-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Extracted Text Card -->
+        <div class="card-detail">
+            <div class="card-header">
+                <h5>Extracted Text</h5>
+            </div>
+            <div class="card-body">
+                <div id="extractedText" class="text-content empty">
+                    No text extracted
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classification History Card -->
+        <div class="card-detail" id="classificationCard" style="display: none;">
+            <div class="card-header">
+                <h5>Classification History</h5>
+            </div>
+            <div class="card-body">
+                <div id="classificationHistory" class="classification-history">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const cvId = {{ cv_id }};
+    
+    function showAlert(type, message) {
+        const box = document.getElementById('alertBox');
+        box.className = `alert alert-${type}`;
+        box.textContent = message;
+        box.classList.remove('d-none');
+        setTimeout(() => box.classList.add('d-none'), 4000);
+    }
+    
+    function formatFileSize(bytes) {
+        if (!bytes) return 'Unknown';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return 'Unknown';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    function getFileIconClass(fileType) {
+        if (!fileType) return 'txt';
+        const type = fileType.toLowerCase();
+        if (type === 'pdf') return 'pdf';
+        if (type === 'docx' || type === 'doc') return 'docx';
+        return 'txt';
+    }
+    
+    function getFileIcon(fileType) {
+        const type = getFileIconClass(fileType);
+        if (type === 'pdf') return 'bi-file-earmark-pdf';
+        if (type === 'docx') return 'bi-file-earmark-word';
+        return 'bi-file-earmark-text';
+    }
+    
+    async function loadCVDetail() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        try {
+            const res = await fetch(`/api/cvs/${cvId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!res.ok) {
+                if (res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                if (res.status === 403) {
+                    showAlert('danger', 'You do not have permission to view this CV');
+                    setTimeout(() => window.location.href = '/create-cv', 2000);
+                    return;
+                }
+                throw new Error(`Failed to load CV (${res.status})`);
+            }
+            
+            const data = await res.json();
+            
+            if (!data.success || !data.cv) {
+                throw new Error('Invalid response format');
+            }
+            
+            const cv = data.cv;
+            
+            // Hide loading, show content
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('cvDetailContent').style.display = 'block';
+            
+            // Populate file info
+            const fileIconClass = getFileIconClass(cv.file_type);
+            const fileIcon = getFileIcon(cv.file_type);
+            document.getElementById('fileInfo').innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <div class="file-icon-large ${fileIconClass}">
+                        <i class="bi ${fileIcon}"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 1.125rem; color: #0f172a;">${cv.file_name}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('fileSize').textContent = formatFileSize(cv.file_size);
+            document.getElementById('fileType').textContent = cv.file_type ? cv.file_type.toUpperCase() : 'Unknown';
+            document.getElementById('uploadedAt').textContent = formatDate(cv.uploaded_at);
+            
+            // Category
+            if (cv.predicted_category) {
+                document.getElementById('category').innerHTML = `
+                    <span class="category-badge">${cv.predicted_category}</span>
+                `;
+            } else {
+                document.getElementById('category').innerHTML = `
+                    <span class="category-badge none">Not classified</span>
+                `;
+            }
+            
+            // Extracted text
+            const textContent = document.getElementById('extractedText');
+            if (cv.file_content && cv.file_content.trim()) {
+                textContent.textContent = cv.file_content;
+                textContent.classList.remove('empty');
+            } else {
+                textContent.textContent = 'No text extracted from this file.';
+                textContent.classList.add('empty');
+            }
+            
+            // Download button
+            document.getElementById('btnDownload').onclick = () => {
+                const link = document.createElement('a');
+                link.href = `/static/uploads/${encodeURIComponent(cv.file_name)}`;
+                link.download = cv.file_name;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            
+            // Classification history
+            if (cv.classification_logs && cv.classification_logs.length > 0) {
+                document.getElementById('classificationCard').style.display = 'block';
+                const historyDiv = document.getElementById('classificationHistory');
+                historyDiv.innerHTML = '';
+                
+                cv.classification_logs.forEach(log => {
+                    const logItem = document.createElement('div');
+                    logItem.className = 'log-item';
+                    logItem.innerHTML = `
+                        <div class="log-header">
+                            <div>
+                                <strong>${log.predicted_category || 'Unknown'}</strong>
+                                ${log.confidence ? `<span class="confidence-score">${(log.confidence * 100).toFixed(1)}% confidence</span>` : ''}
+                            </div>
+                            <div class="log-date">${formatDate(log.created_at)}</div>
+                        </div>
+                    `;
+                    historyDiv.appendChild(logItem);
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error loading CV detail:', error);
+            document.getElementById('loadingState').style.display = 'none';
+            showAlert('danger', 'Failed to load CV details. Please try again.');
+        }
+    }
+    
+    function downloadCV() {
+        // Already handled in loadCVDetail
+    }
+    
+    // Load CV detail on page load
+    document.addEventListener('DOMContentLoaded', loadCVDetail);
+</script>
+{% endblock %}
+

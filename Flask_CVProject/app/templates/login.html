@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng nhập - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        display: block;
+    }
+    
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 500px;
+        width: 100%;
+        animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .auth-header h2 {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .auth-header p {
+        color: #64748b;
+    }
+    
+    .auth-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--gradient-1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+    
+    .form-floating label {
+        padding: 1rem 1.25rem;
+        color: #64748b;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #64748b;
+        z-index: 10;
+        background: white;
+        padding: 0.5rem;
+    }
+    
+    .btn-login-submit {
+        background: var(--gradient-1);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .btn-login-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-login-submit:active {
+        transform: translateY(0);
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e2e8f0;
+    }
+    
+    .divider span {
+        background: white;
+        padding: 0 1rem;
+        position: relative;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .social-login {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .btn-social {
+        flex: 1;
+        padding: 0.8rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .btn-social:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-social i {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #64748b;
+    }
+    
+    .auth-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .remember-forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: -0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-check-label {
+        color: #64748b;
+        cursor: pointer;
+    }
+    
+    .forgot-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .forgot-link:hover {
+        text-decoration: underline;
+    }
+    
+    .loading {
+        display: none;
+        margin-left: 0.5rem;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <h2>Welcome back!</h2>
+            <p>Login to continue using CVision</p>
+        </div>
+        
+        <!-- Alert Messages -->
+        <div id="alertMessage" style="display: none;"></div>
+        
+        <!-- Social Login (Optional) -->
+        <!-- <div class="social-login">
+            <button class="btn btn-social">
+                <i class="bi bi-google"></i> Google
+            </button>
+            <button class="btn btn-social">
+                <i class="bi bi-facebook"></i> Facebook
+            </button>
+        </div>
+        
+        <div class="divider">
+            <span>Or login with email</span>
+        </div> -->
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-floating">
+                <input type="email" class="form-control" id="email" name="email" 
+                       placeholder="name@example.com" required>
+                <label for="email">
+                    <i class="bi bi-envelope me-2"></i>Email
+                </label>
+            </div>
+            
+            <div class="form-floating" style="position: relative;">
+                <input type="password" class="form-control" id="password" name="password" 
+                       placeholder="Password" required>
+                <label for="password">
+                    <i class="bi bi-lock me-2"></i>Password
+                </label>
+                <span class="password-toggle" onclick="togglePassword()">
+                    <i class="bi bi-eye" id="toggleIcon"></i>
+                </span>
+            </div>
+            
+            <div class="remember-forgot">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                    <label class="form-check-label" for="remember">
+                        Remember me
+                    </label>
+                </div>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-login-submit" id="loginBtn">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Login
+                <span class="loading">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            Don't have an account? <a href="/register">Register now</a>
+        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    }
+    
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const loginBtn = document.getElementById('loginBtn');
+        const loading = loginBtn.querySelector('.loading');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        // Get form data
+        const formData = {
+            email: form.email.value,
+            password: form.password.value
+        };
+        
+        // Show loading
+        loginBtn.disabled = true;
+        loading.style.display = 'inline-block';
+        
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Success
+                showAlert('success', 'Login successful! Redirecting...');
+                
+                // Clear old CV drafts from previous user (if any)
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('cv_builder_draft_')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                localStorage.removeItem('cv_builder_draft'); // Xóa dữ liệu cũ nếu có
+                
+                // Save token and user info
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_id', data.user.id);
+                localStorage.setItem('user_email', data.user.email);
+                localStorage.setItem('user_role', data.user.role);
+                if (data.user.full_name) {
+                    localStorage.setItem('user_full_name', data.user.full_name);
+                }
+                
+                // Redirect based on user role
+                let redirectUrl = '/'; // Default redirect to index
+                if (data.user.role === 'admin') {
+                    redirectUrl = '/'; // Redirect admin to index
+                } else if (data.user.role === 'recruiter') {
+                    redirectUrl = '/'; // Redirect recruiter to index
+                } else if (data.user.role === 'candidate') {
+                    redirectUrl = '/'; // Redirect candidate to index
+                }
+                
+                // Redirect after 1 second
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1000);
+            } else {
+                // Error
+                showAlert('danger', data.error || 'Email or password is incorrect!');
+                loginBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('danger', 'An error occurred! Please try again.');
+            loginBtn.disabled = false;
+            loading.style.display = 'none';
+        }
+    }
+    
+    function showAlert(type, message) {
+        const alertDiv = document.getElementById('alertMessage');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button>
+        `;
+        alertDiv.style.display = 'block';
+    }
+    
+    // Auto-hide alert after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        });
+    });
+</script>
+{% endblock %}
+

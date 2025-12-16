@@ -1,0 +1,973 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý CV ứng tuyển - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .page-header h1 {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .job-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.4s ease;
+    }
+    
+    .job-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .job-card:hover {
+        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.15);
+        transform: translateY(-4px);
+        border-color: #667eea;
+    }
+    
+    .job-card.active {
+        border: 2px solid var(--primary-color);
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        box-shadow: 0 8px 30px rgba(79, 70, 229, 0.2);
+    }
+    
+    .job-card.active::before {
+        transform: scaleY(1);
+    }
+    
+    .job-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        transition: color 0.3s ease;
+    }
+    
+    .job-card:hover .job-title {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .job-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .application-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .job-card:hover .application-count {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    }
+    
+    .applications-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .filter-section {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .filter-section .form-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .filter-section .form-select {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-section .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .application-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.75rem;
+        margin-bottom: 1.25rem;
+        border: 2px solid #e2e8f0;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .application-card:hover {
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-color: #667eea;
+        box-shadow: 0 8px 30px rgba(79, 70, 229, 0.15);
+        transform: translateX(5px);
+    }
+    
+    .application-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+    
+    .candidate-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .status-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+    
+    .status-reviewed {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+    
+    .status-shortlisted {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+    
+    .status-rejected {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+    
+    .status-hired {
+        background: linear-gradient(135deg, #d1fae5 0%, #86efac 100%);
+        color: #14532d;
+    }
+    
+    .application-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .application-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .application-actions .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        pointer-events: auto;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .application-actions .btn:active {
+        transform: scale(0.98);
+    }
+    
+    .application-actions .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    
+    .application-actions .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    
+    .application-actions .btn-outline-success {
+        border: 2px solid #10b981;
+        color: #10b981;
+    }
+    
+    .application-actions .btn-outline-success:hover {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-color: #10b981;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        border: 2px dashed #e2e8f0;
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    
+    .empty-state h3, .empty-state h4 {
+        color: var(--dark-color);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Modal Enhancement */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1.5rem 2rem;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .modal-title {
+        font-weight: 700;
+        color: var(--dark-color);
+    }
+    
+    .modal-body {
+        padding: 2rem;
+    }
+    
+    .modal-footer {
+        border-top: 2px solid #e2e8f0;
+        padding: 1.5rem 2rem;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .modal-body .form-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-body .form-select,
+    .modal-body .form-control {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-body .form-select:focus,
+    .modal-body .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .applications-section {
+            padding: 1.5rem;
+        }
+        
+        .filter-section {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-person-lines-fill me-2"></i>Quản lý CV ứng tuyển</h1>
+    <p class="text-muted">Xem và quản lý tất cả CV ứng tuyển theo từng bài đăng</p>
+</div>
+
+<div class="row">
+    <!-- Danh sách Jobs -->
+    <div class="col-lg-4">
+        <div class="applications-section">
+            <h3 class="mb-3"><i class="bi bi-briefcase me-2"></i>Bài đăng tuyển dụng</h3>
+            <div id="jobsList">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Danh sách Applications -->
+    <div class="col-lg-8">
+        <div class="applications-section">
+            <div id="applicationsHeader" style="display: none;">
+                <h3 class="mb-3" id="selectedJobTitle">Chọn bài đăng để xem CV</h3>
+                
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Trạng thái:</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tất cả</option>
+                                <option value="pending">Chờ xem xét</option>
+                                <option value="reviewed">Đã xem</option>
+                                <option value="shortlisted">Đã chọn</option>
+                                <option value="rejected">Từ chối</option>
+                                <option value="hired">Đã tuyển</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Sắp xếp:</label>
+                            <select class="form-select" id="sortFilter">
+                                <option value="date">Mới nhất</option>
+                                <option value="confidence">Độ phù hợp</option>
+                                <option value="category">Ngành nghề</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-primary w-100" onclick="loadApplications()" style="border-radius: 12px; font-weight: 600; padding: 0.75rem;">
+                                <i class="bi bi-funnel me-1"></i>Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="applicationsList">
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h3>Chọn bài đăng để xem CV ứng tuyển</h3>
+                    <p class="text-muted">Danh sách CV sẽ hiển thị ở đây</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem chi tiết CV -->
+<div class="modal fade" id="cvDetailModal" tabindex="-1" aria-labelledby="cvDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cvDetailModalLabel">Chi tiết CV</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="cvDetailContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal cập nhật trạng thái -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">Cập nhật trạng thái</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Trạng thái:</label>
+                    <select class="form-select" id="newStatus">
+                        <option value="pending">Chờ xem xét</option>
+                        <option value="reviewed">Đã xem</option>
+                        <option value="shortlisted">Đã chọn</option>
+                        <option value="rejected">Từ chối</option>
+                        <option value="hired">Đã tuyển</option>
+                    </select>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Ứng viên sẽ nhận được thông báo: "Vui lòng kiểm tra email để biết thêm các thông tin chi tiết"
+                </div>
+                <div id="statusError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="saveStatusUpdate()">
+                    <i class="bi bi-check-circle me-2"></i>Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedJobId = null;
+    let currentApplicationId = null;
+    
+    async function loadJobs() {
+        const token = localStorage.getItem('access_token');
+        const container = document.getElementById('jobsList');
+        
+        try {
+            const response = await fetch('/api/recruiter/jobs', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.jobs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-briefcase"></i>
+                            <h4>Chưa có bài đăng nào</h4>
+                            <p class="text-muted">Tạo bài đăng tuyển dụng để bắt đầu nhận CV</p>
+                            <a href="/recruiter/jobs/new" class="btn btn-primary" style="padding: 0.6rem 2.5rem; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; line-height: 1;">
+                                <i class=" me-2"></i>Tạo bài đăng mới
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Load application counts for each job
+                const jobsWithCounts = await Promise.all(
+                    data.jobs.map(async (job) => {
+                        const appResponse = await fetch(`/api/recruiter/jobs/${job.id}/applications`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        const appData = await appResponse.json();
+                        return {
+                            ...job,
+                            application_count: appData.success ? appData.total : 0
+                        };
+                    })
+                );
+                
+                container.innerHTML = jobsWithCounts.map(job => `
+                    <div class="job-card" data-job-id="${job.id}" onclick="selectJob(${job.id}, '${job.title.replace(/'/g, "\\'")}')">
+                        <div class="job-title">${job.title}</div>
+                        <div class="job-meta">
+                            <span><i class="bi bi-calendar"></i>${new Date(job.created_at).toLocaleDateString('vi-VN')}</span>
+                            <span><i class="bi bi-geo-alt"></i>${job.location || 'Chưa cập nhật'}</span>
+                        </div>
+                        <div class="mt-2">
+                            <span class="application-count">
+                                <i class="bi bi-people me-1"></i>${job.application_count} CV
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Lỗi khi tải danh sách bài đăng'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading jobs:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải danh sách bài đăng
+                </div>
+            `;
+        }
+    }
+    
+    function selectJob(jobId, jobTitle) {
+        selectedJobId = jobId;
+        
+        // Update UI - highlight selected job card
+        document.querySelectorAll('.job-card').forEach(card => {
+            card.classList.remove('active');
+            // Check if this card is for the selected job
+            const cardJobId = card.getAttribute('data-job-id');
+            if (cardJobId && parseInt(cardJobId) === jobId) {
+                card.classList.add('active');
+            }
+        });
+        
+        // If called from event (click), highlight the clicked card
+        if (typeof event !== 'undefined' && event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Show applications header
+        document.getElementById('applicationsHeader').style.display = 'block';
+        document.getElementById('selectedJobTitle').textContent = jobTitle;
+        
+        // Load applications
+        loadApplications();
+    }
+    
+    async function loadApplications() {
+        if (!selectedJobId) return;
+        
+        const token = localStorage.getItem('access_token');
+        const container = document.getElementById('applicationsList');
+        const status = document.getElementById('statusFilter').value;
+        const sortBy = document.getElementById('sortFilter').value;
+        
+        // Show loading
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        
+        try {
+            const params = new URLSearchParams();
+            if (status) params.append('status', status);
+            if (sortBy) params.append('sort_by', sortBy);
+            
+            const response = await fetch(`/api/recruiter/jobs/${selectedJobId}/applications?${params.toString()}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.applications.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h4>Chưa có CV nào ứng tuyển</h4>
+                            <p class="text-muted">Ứng viên sẽ xuất hiện ở đây khi họ ứng tuyển</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const applicationsHTML = data.applications.map(app => {
+                    const statusClass = `status-${app.status}`;
+                    const statusText = {
+                        'pending': 'Chờ xem xét',
+                        'reviewed': 'Đã xem',
+                        'shortlisted': 'Đã chọn',
+                        'rejected': 'Từ chối',
+                        'hired': 'Đã tuyển'
+                    }[app.status] || app.status;
+                    
+                    const statusIcon = {
+                        'pending': 'bi-clock-history',
+                        'reviewed': 'bi-eye',
+                        'shortlisted': 'bi-check-circle',
+                        'rejected': 'bi-x-circle',
+                        'hired': 'bi-trophy'
+                    }[app.status] || 'bi-circle';
+                    
+                    return `
+                        <div class="application-card">
+                            <div class="application-header">
+                                <div>
+                                    <div class="candidate-name">${app.candidate_name}</div>
+                                    <div class="application-meta">
+                                        <span><i class="bi bi-file-earmark"></i>${app.cv_file_name}</span>
+                                        ${app.category ? `<span><i class="bi bi-tag"></i>${app.category}</span>` : ''}
+                                        ${app.confidence ? `<span><i class="bi bi-star"></i>Phù hợp: ${(app.confidence * 100).toFixed(0)}%</span>` : ''}
+                                        <span><i class="bi bi-calendar"></i>${new Date(app.applied_at).toLocaleDateString('vi-VN')}</span>
+                                    </div>
+                                </div>
+                                <span class="status-badge ${statusClass}">
+                                    <i class="bi ${statusIcon}"></i>${statusText}
+                                </span>
+                            </div>
+                            <div class="application-actions">
+                                <button class="btn btn-sm btn-outline-primary view-cv-btn" data-cv-id="${app.cv_id}" type="button">
+                                    <i class="bi bi-eye me-1"></i>Xem CV
+                                </button>
+                                <button class="btn btn-sm btn-outline-success update-status-btn" data-application-id="${app.id}" data-current-status="${app.status}" type="button">
+                                    <i class="bi bi-pencil me-1"></i>Cập nhật trạng thái
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = applicationsHTML;
+                
+                // Bind events trực tiếp sau khi render
+                container.querySelectorAll('.view-cv-btn').forEach(btn => {
+                    // Đánh dấu đã bind để tránh duplicate
+                    if (!btn.hasAttribute('data-listener-bound')) {
+                        btn.setAttribute('data-listener-bound', 'true');
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const cvId = parseInt(this.getAttribute('data-cv-id'));
+                            if (cvId) {
+                                viewCV(cvId);
+                            }
+                        }, { passive: false });
+                    }
+                });
+                
+                container.querySelectorAll('.update-status-btn').forEach(btn => {
+                    // Đánh dấu đã bind để tránh duplicate
+                    if (!btn.hasAttribute('data-listener-bound')) {
+                        btn.setAttribute('data-listener-bound', 'true');
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const applicationId = parseInt(this.getAttribute('data-application-id'));
+                            const currentStatus = this.getAttribute('data-current-status');
+                            if (applicationId) {
+                                updateStatus(applicationId, currentStatus);
+                            }
+                        }, { passive: false });
+                    }
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>${data.message || 'Lỗi khi tải danh sách CV'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading applications:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tải danh sách CV
+                </div>
+            `;
+        }
+    }
+    
+    async function viewCV(cvId) {
+        const token = localStorage.getItem('access_token');
+        
+        // Mở trực tiếp file PDF trong tab mới
+        const downloadUrl = `/api/cvs/${cvId}/download`;
+        
+        // Tạo link ẩn để mở PDF
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.target = '_blank';
+        link.style.display = 'none';
+        
+        // Thêm Authorization header bằng cách tạo iframe hoặc dùng fetch
+        // Vì không thể set header cho <a>, ta dùng fetch để lấy file rồi tạo blob URL
+        try {
+            const response = await fetch(downloadUrl, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                // Lấy file blob
+                const blob = await response.blob();
+                
+                // Tạo URL từ blob
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                // Mở PDF trong tab mới
+                const pdfWindow = window.open(blobUrl, '_blank');
+                
+                // Cleanup blob URL sau khi mở
+                if (pdfWindow) {
+                    pdfWindow.addEventListener('load', () => {
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+                    });
+                } else {
+                    // Nếu popup bị chặn, thử download
+                    link.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'CV.pdf';
+                    link.href = blobUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+                }
+            } else {
+                const errorData = await response.json();
+                if (typeof Toast !== 'undefined') {
+                    Toast.error(`Lỗi: ${errorData.message || 'Không thể mở CV'}`);
+                } else {
+                    alert(`Lỗi: ${errorData.message || 'Không thể mở CV'}`);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading CV:', error);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Có lỗi xảy ra khi mở CV. Vui lòng thử lại.');
+            } else {
+                alert('Có lỗi xảy ra khi mở CV. Vui lòng thử lại.');
+            }
+        }
+    }
+    
+    function updateStatus(applicationId, currentStatus) {
+        if (!applicationId) {
+            console.error('Application ID is missing');
+            return;
+        }
+        
+        currentApplicationId = applicationId;
+        const statusSelect = document.getElementById('newStatus');
+        const errorDiv = document.getElementById('statusError');
+        
+        if (statusSelect) {
+            statusSelect.value = currentStatus || 'pending';
+        }
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+        }
+        
+        const modalElement = document.getElementById('updateStatusModal');
+        if (!modalElement) {
+            console.error('Modal element not found');
+            return;
+        }
+        
+        // Kiểm tra xem modal đã có instance chưa
+        let modal = bootstrap.Modal.getInstance(modalElement);
+        if (!modal) {
+            // Tạo instance mới nếu chưa có
+            modal = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        }
+        
+        // Hiển thị modal
+        modal.show();
+    }
+    
+    async function saveStatusUpdate() {
+        const token = localStorage.getItem('access_token');
+        const newStatus = document.getElementById('newStatus').value;
+        const errorDiv = document.getElementById('statusError');
+        
+        try {
+            const response = await fetch(`/api/recruiter/applications/${currentApplicationId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
+                modal.hide();
+                
+                // Reload applications
+                loadApplications();
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="bi bi-check-circle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.applications-section').insertBefore(alert, document.getElementById('applicationsHeader'));
+                
+                setTimeout(() => alert.remove(), 3000);
+            } else {
+                errorDiv.textContent = data.message || 'Lỗi khi cập nhật trạng thái';
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            errorDiv.textContent = 'Có lỗi xảy ra khi cập nhật trạng thái';
+            errorDiv.style.display = 'block';
+        }
+    }
+    
+    // Hàm để tự động chọn job từ URL parameter
+    async function autoSelectJobFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobIdParam = urlParams.get('job_id');
+        
+        if (jobIdParam) {
+            const jobId = parseInt(jobIdParam);
+            if (jobId) {
+                // Đợi jobs được load xong
+                await loadJobs();
+                
+                // Tìm job card bằng data-job-id attribute
+                const jobCard = document.querySelector(`.job-card[data-job-id="${jobId}"]`);
+                if (jobCard) {
+                    // Lấy job title từ card
+                    const jobTitle = jobCard.querySelector('.job-title').textContent;
+                    selectJob(jobId, jobTitle);
+                } else {
+                    // Nếu không tìm thấy card, thử fetch job info trực tiếp
+                    const token = localStorage.getItem('access_token');
+                    try {
+                        const response = await fetch(`/api/recruiter/jobs/${jobId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            selectJob(jobId, data.job.title);
+                        }
+                    } catch (error) {
+                        console.error('Error loading job:', error);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Event delegation làm fallback (nếu direct binding không hoạt động)
+    document.addEventListener('click', function(e) {
+        // Xử lý nút "Xem CV" (fallback)
+        if (e.target.closest('.view-cv-btn') && !e.target.closest('.view-cv-btn').hasAttribute('data-listener-bound')) {
+            const btn = e.target.closest('.view-cv-btn');
+            const cvId = parseInt(btn.getAttribute('data-cv-id'));
+            if (cvId) {
+                e.preventDefault();
+                e.stopPropagation();
+                viewCV(cvId);
+            }
+        }
+        
+        // Xử lý nút "Cập nhật trạng thái" (fallback)
+        if (e.target.closest('.update-status-btn') && !e.target.closest('.update-status-btn').hasAttribute('data-listener-bound')) {
+            const btn = e.target.closest('.update-status-btn');
+            const applicationId = parseInt(btn.getAttribute('data-application-id'));
+            const currentStatus = btn.getAttribute('data-current-status');
+            if (applicationId) {
+                e.preventDefault();
+                e.stopPropagation();
+                updateStatus(applicationId, currentStatus);
+            }
+        }
+    });
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadJobs();
+        await autoSelectJobFromURL();
+    });
+</script>
+{% endblock %}
+

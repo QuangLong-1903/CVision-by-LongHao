@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - CVision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-wrapper { 
+        max-width: 900px; 
+        margin: 2rem auto; 
+    }
+    
+    .page-header {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .page-header h1 {
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-profile { 
+        background: #fff; 
+        border: 1px solid #e2e8f0; 
+        border-radius: 20px; 
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .card-profile:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .card-profile .card-header { 
+        padding: 2rem 2rem 1.5rem; 
+        border-bottom: 2px solid #e2e8f0; 
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px 20px 0 0; 
+    }
+    
+    .card-profile .card-header h4 {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin: 0;
+    }
+    
+    .card-profile .card-body { 
+        padding: 2rem; 
+    }
+    
+    .form-control { 
+        border: 2px solid #e2e8f0; 
+        border-radius: 12px; 
+        padding: 0.875rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    
+    .form-control:focus { 
+        border-color: #667eea; 
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); 
+        outline: none;
+    }
+    
+    .form-control:disabled {
+        background: #f8fafc;
+        color: #64748b;
+        cursor: not-allowed;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label.muted {
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .section-divider {
+        margin: 2rem 0;
+        border: none;
+        border-top: 2px solid #e2e8f0;
+    }
+    
+    .section-title {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+    }
+    
+    .btn-save { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff; 
+        border: none; 
+        border-radius: 12px; 
+        padding: 0.9rem 2rem; 
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-save::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-save:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-save:hover { 
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    }
+    
+    .btn-save:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-outline-secondary {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.9rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+    
+    .muted { 
+        color: #64748b; 
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.5rem;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .card-profile .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="page-header">
+        <h1><i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi</h1>
+        <p class="text-muted mb-0">Quản lý thông tin cá nhân và cài đặt tài khoản</p>
+    </div>
+    
+    <div class="profile-wrapper">
+        <div class="card-profile">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-gear me-2"></i>Cài đặt tài khoản</h4>
+            </div>
+            <div class="card-body">
+                <div id="alertBox" class="alert d-none" role="alert"></div>
+                
+                <form id="profileForm" onsubmit="return saveProfile(event)">
+                    <div class="mb-4">
+                        <label class="form-label muted">
+                            <i class="bi bi-envelope me-2"></i>Email
+                        </label>
+                        <input type="email" id="email" class="form-control" disabled>
+                        <small class="text-muted">Email không thể thay đổi</small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-person me-2"></i>Họ và tên
+                        </label>
+                        <input type="text" id="full_name" class="form-control" placeholder="Nhập họ và tên của bạn">
+                    </div>
+                    
+                    <hr class="section-divider">
+                    
+                    <h6 class="section-title">
+                        <i class="bi bi-lock"></i>
+                        <span>Thay đổi mật khẩu (tùy chọn)</span>
+                    </h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Mật khẩu hiện tại</label>
+                            <div class="input-group">
+                                <input type="password" id="current_password" class="form-control" placeholder="Nhập mật khẩu hiện tại">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('current_password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mật khẩu mới</label>
+                            <div class="input-group">
+                                <input type="password" id="new_password" class="form-control" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-save" type="submit">
+                            <i class="bi bi-check-circle me-2"></i>Lưu thay đổi
+                        </button>
+                        <a class="btn btn-outline-secondary" href="/">
+                            <i class="bi bi-x-circle me-2"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showAlert(type, message) {
+        const box = document.getElementById('alertBox');
+        box.className = `alert alert-${type}`;
+        box.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}`;
+        box.classList.remove('d-none');
+        setTimeout(() => box.classList.add('d-none'), 5000);
+    }
+    
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    }
+
+    async function loadProfile() {
+        const token = localStorage.getItem('access_token');
+        if (!token) { window.location.href = '/login'; return; }
+        try {
+            const res = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) {
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to load profile (${res.status})`);
+            }
+            const data = await res.json();
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('full_name').value = data.full_name || '';
+        } catch (e) {
+            showAlert('danger', 'Không thể tải hồ sơ. Vui lòng thử lại.');
+        }
+    }
+
+    async function saveProfile(e) {
+        e.preventDefault();
+        const token = localStorage.getItem('access_token');
+        if (!token) { window.location.href = '/login'; return false; }
+        const btn = document.querySelector('.btn-save');
+        const originalText = btn.innerHTML;
+        if (btn) { 
+            btn.disabled = true; 
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...'; 
+        }
+        
+        const body = { full_name: document.getElementById('full_name').value };
+        const newPwd = document.getElementById('new_password').value;
+        const curPwd = document.getElementById('current_password').value;
+        
+        if (newPwd) {
+            if (!curPwd) {
+                showAlert('danger', 'Vui lòng nhập mật khẩu hiện tại để thay đổi mật khẩu');
+                if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+                return false;
+            }
+            if (newPwd.length < 6) {
+                showAlert('danger', 'Mật khẩu mới phải có ít nhất 6 ký tự');
+                if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+                return false;
+            }
+            body.new_password = newPwd;
+            body.current_password = curPwd;
+        }
+        
+        try {
+            const res = await fetch('/api/me', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || data.message || `Cập nhật thất bại (${res.status})`);
+            
+            // Update cached name for header
+            if (data.full_name) localStorage.setItem('user_full_name', data.full_name);
+            showAlert('success', 'Cập nhật hồ sơ thành công');
+            
+            // Refresh header menu
+            if (typeof updateAuthUI === 'function') updateAuthUI();
+            
+            // Clear password fields
+            document.getElementById('current_password').value = '';
+            document.getElementById('new_password').value = '';
+        } catch (e) {
+            showAlert('danger', e.message || 'Có lỗi xảy ra khi cập nhật hồ sơ');
+        } finally {
+            if (btn) { 
+                btn.disabled = false; 
+                btn.innerHTML = originalText; 
+            }
+        }
+        return false;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+{% endblock %}
+
+
